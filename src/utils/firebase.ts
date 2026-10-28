@@ -8,7 +8,8 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { 
   getFirestore, doc, setDoc, getDoc, getDocFromServer, 
-  collection, getDocs, deleteDoc, onSnapshot, Unsubscribe 
+  collection, getDocs, deleteDoc, onSnapshot, Unsubscribe,
+  writeBatch
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Student, DailyAttendance, ClassConfig } from '../types';
@@ -263,6 +264,26 @@ export async function deleteStudentFromFirestore(studentId: string): Promise<voi
   const path = `siswa/${studentId}`;
   try {
     await deleteDoc(doc(db, 'siswa', studentId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+/**
+ * Hapus Seluruh Siswa dari Cloud Firestore (Batch Delete)
+ */
+export async function deleteAllStudentsFromFirestore(): Promise<void> {
+  const path = 'siswa';
+  try {
+    const snap = await getDocs(collection(db, path));
+    if (snap.empty) return;
+
+    // Firestore batched write supports up to 500 operations
+    const batch = writeBatch(db);
+    snap.docs.forEach((docItem) => {
+      batch.delete(docItem.ref);
+    });
+    await batch.commit();
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
   }

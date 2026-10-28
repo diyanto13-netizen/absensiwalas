@@ -15,7 +15,7 @@ import {
 import { 
   loadStudentsFromFirestore, saveStudentToFirestore, 
   loadAttendanceFromFirestore, saveAttendanceToFirestore, 
-  saveConfigToFirestore, deleteStudentFromFirestore,
+  saveConfigToFirestore, deleteStudentFromFirestore, deleteAllStudentsFromFirestore,
   subscribeToStudents, subscribeToAttendance, subscribeToConfig
 } from './utils/firebase';
 import { Student, DailyAttendance, ClassConfig, FirebaseConfigState, AuthUser, ActiveTab } from './types';
@@ -197,6 +197,19 @@ export default function App() {
     }
   };
 
+  // Handler Hapus Seluruh Siswa (Lokal + Cloud Firestore)
+  const handleDeleteAllStudents = async () => {
+    try {
+      await deleteAllStudentsFromFirestore();
+      setStudents([]);
+      saveStudents([]);
+    } catch (err) {
+      console.warn('Gagal menghapus seluruh siswa dari Firestore:', err);
+      setStudents([]);
+      saveStudents([]);
+    }
+  };
+
   // Handler Login & Logout
   const handleLoginSuccess = (authUser: AuthUser) => {
     setUser(authUser);
@@ -365,6 +378,7 @@ export default function App() {
                 students={students}
                 onSaveStudents={handleSaveStudents}
                 onDeleteStudent={handleDeleteStudent}
+                onDeleteAllStudents={handleDeleteAllStudents}
                 showToast={showToast}
               />
             )}
