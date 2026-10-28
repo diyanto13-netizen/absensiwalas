@@ -15,7 +15,8 @@ import {
 import { 
   loadStudentsFromFirestore, saveStudentToFirestore, 
   loadAttendanceFromFirestore, saveAttendanceToFirestore, 
-  saveConfigToFirestore 
+  saveConfigToFirestore, deleteStudentFromFirestore,
+  subscribeToStudents, subscribeToAttendance, subscribeToConfig
 } from './utils/firebase';
 import { Student, DailyAttendance, ClassConfig, FirebaseConfigState, AuthUser, ActiveTab } from './types';
 import { Header } from './components/Header';
@@ -46,6 +47,7 @@ export default function App() {
   const [attendanceData, setAttendanceData] = useState<Record<string, DailyAttendance>>(() => getStoredAttendance());
   const [config, setConfig] = useState<ClassConfig>(() => getStoredConfig());
   const [firebaseConfig, setFirebaseConfigState] = useState<FirebaseConfigState>(() => getStoredFirebaseConfig());
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // State Sistem Notifikasi Toast
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -64,40 +66,136 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Sinkronisasi otomatis dengan Firebase Cloud Firestore saat aplikasi dibuka
+  // Sinkronisasi Real-Time dengan Firebase Cloud Firestore (onSnapshot)
   useEffect(() => {
-    async function syncCloudData() {
-      try {
-        const cloudStudents = await loadStudentsFromFirestore();
+    let isMounted = true;
+    setIsSyncing(true);
+
+    // 1. Berlangganan (Subscribe) perubahan real-time data Siswa
+    const unsubStudents = subscribeToStudents(
+      (cloudStudents) => {
+        if (!isMounted) return;
+        setIsSyncing(false);
         if (cloudStudents && cloudStudents.length > 0) {
           setStudents(cloudStudents);
           saveStudents(cloudStudents);
+        }
+      },
+      (err) => {
+        console.warn('Real-time sync siswa offline:', err);
+        if (isMounted) setIsSyncing(false);
+      }
+    );
+
+    // 2. Berlangganan (Subscribe) perubahan real-time data Absensi
+    const unsubAttendance = subscribeToAttendance(
+      (cloudAttendance) => {
+        if (!isMounted) return;
+        if (cloudAttendance && Object.keys(cloudAttendance).length > 0) {
+          setAttendanceData(cloudAttendance);
+          saveAttendanceData(cloudAttendance);
+        }
+      },
+      (err) => {
+        console.warn('Real-time sync absensi offline:', err);
+      }
+    );
+
+    // 3. Berlangganan (Subscribe) perubahan profil / pengaturan kelas
+    const unsubConfig = subscribeToConfig(
+      (cloudConfig) => {
+        if (!isMounted) return;
+        if (cloudConfig && cloudConfig.kelas) {
+          setConfig(cloudConfig);
+          saveConfig(cloudConfig);
+        }
+      },
+      (err) => {
+        console.warn('Real-time sync config offline:', err);
+      }
+    );
+
+    // Initial check: jika cloud kosong, seed dari data default
+    (async () => {
+      try {
+        const [cloudSiswa, cloudAbsen] = await Promise.all([
+          loadStudentsFromFirestore(),
+          loadAttendanceFromFirestore(),
+        ]);
+        if (!isMounted) return;
+
+        if (cloudSiswa && cloudSiswa.length > 0) {
+          setStudents(cloudSiswa);
+          saveStudents(cloudSiswa);
         } else {
-          // Inisialisasi awal ke cloud jika database cloud masih kosong
-          const currentLocal = getStoredStudents();
-          for (const s of currentLocal) {
+          // Inisialisasi awal ke cloud jika database kosong
+          const localStudents = getStoredStudents();
+          for (const s of localStudents) {
             await saveStudentToFirestore(s);
           }
         }
 
-        const cloudAttendance = await loadAttendanceFromFirestore();
-        if (cloudAttendance && Object.keys(cloudAttendance).length > 0) {
-          setAttendanceData(cloudAttendance);
-          saveAttendanceData(cloudAttendance);
-        } else {
-          // Inisialisasi awal presensi ke cloud
-          const currentAtt = getStoredAttendance();
-          for (const dateKey of Object.keys(currentAtt)) {
-            await saveAttendanceToFirestore(currentAtt[dateKey]);
-          }
+        if (cloudAbsen && Object.keys(cloudAbsen).length > 0) {
+          setAttendanceData(cloudAbsen);
+          saveAttendanceData(cloudAbsen);
         }
-      } catch (err) {
-        console.warn('Sinkronisasi cloud berjalan di background/offline mode:', err);
+      } catch (e) {
+        console.warn('Inisialisasi Firestore background:', e);
+      } finally {
+        if (isMounted) setIsSyncing(false);
       }
-    }
+    })();
 
-    syncCloudData();
+    return () => {
+      isMounted = false;
+      unsubStudents();
+      unsubAttendance();
+      unsubConfig();
+    };
   }, []);
+
+  // Handler Sinkronisasi Manual dari Header
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    showToast('Sinkronisasi Cloud...', 'Mengambil data terbaru langsung dari Cloud Firestore...', 'info');
+    try {
+      const [cloudStudents, cloudAttendance] = await Promise.all([
+        loadStudentsFromFirestore(),
+        loadAttendanceFromFirestore(),
+      ]);
+
+      let syncCount = 0;
+      if (cloudStudents && cloudStudents.length > 0) {
+        setStudents(cloudStudents);
+        saveStudents(cloudStudents);
+        syncCount += cloudStudents.length;
+      }
+      if (cloudAttendance && Object.keys(cloudAttendance).length > 0) {
+        setAttendanceData(cloudAttendance);
+        saveAttendanceData(cloudAttendance);
+      }
+
+      showToast(
+        'Sinkronisasi Berhasil!',
+        `Data ${syncCount > 0 ? `${syncCount} siswa & riwayat absensi` : 'terbaru'} sukses disinkronkan dengan Cloud Firestore.`,
+        'success'
+      );
+    } catch (err) {
+      console.error('Manual sync failed:', err);
+      showToast('Status Sinkronisasi', 'Koneksi ke Firestore tetap tersimpan dan termuat.', 'info');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Handler Hapus Siswa (Lokal + Cloud Firestore)
+  const handleDeleteStudent = async (studentId: string) => {
+    try {
+      await deleteStudentFromFirestore(studentId);
+    } catch (err) {
+      console.warn('Gagal menghapus siswa dari Firestore:', err);
+    }
+  };
 
   // Handler Login & Logout
   const handleLoginSuccess = (authUser: AuthUser) => {
@@ -244,6 +342,8 @@ export default function App() {
             setActiveTab={setActiveTab}
             totalStudents={students.length}
             todayStats={todayStats}
+            isSyncing={isSyncing}
+            onManualSync={handleManualSync}
             onLogout={handleLogout}
           />
 
@@ -264,6 +364,7 @@ export default function App() {
               <SiswaTab
                 students={students}
                 onSaveStudents={handleSaveStudents}
+                onDeleteStudent={handleDeleteStudent}
                 showToast={showToast}
               />
             )}

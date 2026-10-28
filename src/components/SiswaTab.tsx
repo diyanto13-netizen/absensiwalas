@@ -10,12 +10,14 @@ import { exportStudentsToExcel, parseStudentsFromExcel, downloadStudentTemplateE
 interface SiswaTabProps {
   students: Student[];
   onSaveStudents: (newStudents: Student[]) => void;
+  onDeleteStudent?: (studentId: string) => void;
   showToast: (title: string, message?: string, type?: 'success' | 'error' | 'info') => void;
 }
 
 export const SiswaTab: React.FC<SiswaTabProps> = ({
   students,
   onSaveStudents,
+  onDeleteStudent,
   showToast,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -140,9 +142,14 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
   // Hapus Siswa
   const handleConfirmDelete = () => {
     if (deletingStudent) {
-      const updated = students.filter((s) => s.id !== deletingStudent.id);
+      const studentId = deletingStudent.id;
+      const studentName = deletingStudent.nama;
+      const updated = students.filter((s) => s.id !== studentId);
       onSaveStudents(updated);
-      showToast('Siswa Dihapus', `${deletingStudent.nama} telah dihapus.`, 'info');
+      if (onDeleteStudent) {
+        onDeleteStudent(studentId);
+      }
+      showToast('Siswa Dihapus', `${studentName} telah dihapus dari basis data.`, 'info');
       setDeletingStudent(null);
     }
   };

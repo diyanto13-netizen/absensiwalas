@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { School, Users, CheckCircle, Clock, LogOut, Activity, Calendar, ShieldCheck } from 'lucide-react';
+import { School, Users, CheckCircle, Clock, LogOut, Activity, Calendar, ShieldCheck, Cloud, RefreshCw } from 'lucide-react';
 import { ClassConfig, AuthUser, ActiveTab } from '../types';
 
 interface HeaderProps {
@@ -16,6 +16,8 @@ interface HeaderProps {
     belum: number;
     rate: number;
   };
+  isSyncing?: boolean;
+  onManualSync?: () => void;
   onLogout: () => void;
 }
 
@@ -26,6 +28,8 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   totalStudents,
   todayStats,
+  isSyncing = false,
+  onManualSync,
   onLogout,
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -112,6 +116,28 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-slate-600">/</span>
               <span className="text-rose-400" title="Alpa">A:{todayStats.alpa}</span>
             </div>
+
+            {/* Cloud Firestore Real-time Sync Indicator & Manual Sync Button */}
+            <button
+              onClick={onManualSync}
+              disabled={isSyncing}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs transition border cursor-pointer ${
+                isSyncing
+                  ? 'bg-amber-950/40 border-amber-500/30 text-amber-300'
+                  : 'bg-indigo-950/40 hover:bg-indigo-900/50 border-indigo-500/30 text-indigo-300'
+              }`}
+              title="Status Cloud Firestore: Real-time Aktif. Klik untuk sinkronisasi ulang manual."
+            >
+              {isSyncing ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+              ) : (
+                <Cloud className="w-3.5 h-3.5 text-indigo-400" />
+              )}
+              <span className="hidden sm:inline text-[11px] font-medium">
+                {isSyncing ? 'Sinkronisasi...' : 'Cloud Aktif'}
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            </button>
 
             {/* Teacher Profile & Logout */}
             <div className="flex items-center gap-1.5 sm:gap-2 pl-1 sm:pl-2 border-l border-slate-800">
