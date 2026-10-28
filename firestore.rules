@@ -1,0 +1,83 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Catch-all: Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Security Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && request.auth.token.email == 'diyanto13@gmail.com';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // Helper Validasi Entitas Siswa
+    function isValidStudent(data) {
+      return data.keys().hasAll(['id', 'nis', 'nama', 'jenisKelamin', 'noHpOrtu']) &&
+        data.id is string && data.id.size() <= 64 &&
+        data.nis is string && data.nis.size() <= 20 &&
+        data.nama is string && data.nama.size() > 0 && data.nama.size() <= 100 &&
+        (data.jenisKelamin == 'L' || data.jenisKelamin == 'P') &&
+        data.noHpOrtu is string && data.noHpOrtu.size() <= 30 &&
+        (!('alamat' in data) || (data.alamat is string && data.alamat.size() <= 250)) &&
+        (!('catatan' in data) || (data.catatan is string && data.catatan.size() <= 250));
+    }
+
+    // Helper Validasi Entitas Absensi Harian
+    function isValidAttendance(data, dateId) {
+      return data.keys().hasAll(['date', 'records', 'updatedAt']) &&
+        data.date is string && data.date == dateId && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+        data.records is map &&
+        data.updatedAt is string &&
+        (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 100));
+    }
+
+    // Helper Validasi Konfigurasi Rombel
+    function isValidConfig(data) {
+      return data.keys().hasAll(['namaSekolah', 'kelas', 'waliKelas', 'tahunAjaran']) &&
+        data.namaSekolah is string && data.namaSekolah.size() <= 120 &&
+        data.kelas is string && data.kelas.size() <= 50 &&
+        data.waliKelas is string && data.waliKelas.size() <= 100 &&
+        data.tahunAjaran is string && data.tahunAjaran.size() <= 20 &&
+        (!('programKeahlian' in data) || (data.programKeahlian is string && data.programKeahlian.size() <= 100)) &&
+        (!('semester' in data) || (data.semester == 'Ganjil' || data.semester == 'Genap'));
+    }
+
+    // Koleksi Master Data Siswa
+    match /siswa/{studentId} {
+      allow read: if true;
+      allow create: if isValidId(studentId) && isValidStudent(incoming());
+      allow update: if isValidId(studentId) && isValidStudent(incoming());
+      allow delete: if isValidId(studentId);
+    }
+
+    // Koleksi Absensi Harian Berdasarkan Tanggal
+    match /absensi/{date} {
+      allow read: if true;
+      allow create: if isValidId(date) && isValidAttendance(incoming(), date);
+      allow update: if isValidId(date) && isValidAttendance(incoming(), date);
+      allow delete: if isValidId(date);
+    }
+
+    // Koleksi Konfigurasi Rombel & Sekolah
+    match /pengaturan/{configId} {
+      allow read: if true;
+      allow create, update: if isValidId(configId) && isValidConfig(incoming());
+      allow delete: if isSuperAdmin();
+    }
+  }
+}

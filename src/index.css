@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --glass-bg: rgba(15, 23, 42, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  backdrop-filter: blur(8px);
+}
+
+.glass-input:focus {
+  border-color: #06b6d4;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.25);
+}
+
+/* Glowing backgrounds */
+.glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6);
+}
+
+/* Print CSS Optimization */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+
+  .no-print,
+  #loginScreen,
+  nav,
+  header,
+  .print-hide {
+    display: none !important;
+  }
+
+  .print-area {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .print-table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #333333 !important;
+    padding: 6px 8px !important;
+    color: #000000 !important;
+  }
+
+  .print-table th {
+    background-color: #f1f5f9 !important;
+    font-weight: bold !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4 portrait;
+  }
+}

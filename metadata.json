@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Presensi Digital XII TKJ 2",
+  "description": "Sistem Presensi Digital Kelas XII TKJ 2 SMKS PGRI 1 Kota Sukabumi dengan Glassmorphism UI, grafik analitik Chart.js, ekspor Excel, cetak laporan, dan integrasi WhatsApp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Data peserta didik kelas XII TKJ 2",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID unik siswa",
+          "maxLength": 64
+        },
+        "nis": {
+          "type": "string",
+          "description": "Nomor Induk Siswa",
+          "maxLength": 20
+        },
+        "nama": {
+          "type": "string",
+          "description": "Nama lengkap siswa",
+          "maxLength": 100
+        },
+        "jenisKelamin": {
+          "type": "string",
+          "enum": ["L", "P"],
+          "description": "Jenis kelamin L atau P"
+        },
+        "noHpOrtu": {
+          "type": "string",
+          "description": "Nomor telepon / WhatsApp orang tua siswa",
+          "maxLength": 25
+        },
+        "alamat": {
+          "type": "string",
+          "description": "Domisili atau alamat siswa",
+          "maxLength": 250
+        },
+        "catatan": {
+          "type": "string",
+          "description": "Catatan khusus atau prestasi siswa",
+          "maxLength": 250
+        }
+      },
+      "required": ["id", "nis", "nama", "jenisKelamin", "noHpOrtu"]
+    },
+    "DailyAttendance": {
+      "title": "DailyAttendance",
+      "description": "Catatan kehadiran harian rombel XII TKJ 2",
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "Tanggal presensi YYYY-MM-DD",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "records": {
+          "type": "object",
+          "description": "Peta catatan absensi per siswa"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Waktu pembaruan ISO string"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Nama pengisi absensi / wali kelas",
+          "maxLength": 100
+        }
+      },
+      "required": ["date", "records", "updatedAt"]
+    },
+    "ClassConfig": {
+      "title": "ClassConfig",
+      "description": "Identitas kelas dan sekolah untuk kop surat",
+      "type": "object",
+      "properties": {
+        "namaSekolah": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "programKeahlian": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "kelas": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "waliKelas": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "nipWaliKelas": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "kepalaSekolah": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "nipKepalaSekolah": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "tahunAjaran": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "semester": {
+          "type": "string",
+          "enum": ["Ganjil", "Genap"]
+        },
+        "alamatSekolah": {
+          "type": "string",
+          "maxLength": 250
+        }
+      },
+      "required": ["namaSekolah", "kelas", "waliKelas", "tahunAjaran"]
+    }
+  },
+  "firestore": {
+    "/siswa/{studentId}": {
+      "schema": "Student",
+      "description": "Koleksi data master peserta didik"
+    },
+    "/absensi/{date}": {
+      "schema": "DailyAttendance",
+      "description": "Koleksi presensi harian per tanggal"
+    },
+    "/pengaturan/{configId}": {
+      "schema": "ClassConfig",
+      "description": "Konfigurasi identitas kelas dan sekolah"
+    }
+  }
+}
