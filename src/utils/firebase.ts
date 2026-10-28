@@ -2,7 +2,7 @@
  * @license
  * Sistem Presensi Digital - SMKS PGRI 1 Kota Sukabumi
  * Modul Konfigurasi & Inisialisasi Firebase Cloud Firestore
- * Mendukung Pendekatan B: Akun Khusus Tiap Wali Kelas (Role-Based Login by NIP/Akun)
+ * Mendukung Pendekatan B: Akun Khusus Tiap Wali Kelas & Konfigurasi Super Admin
  */
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -13,8 +13,8 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { Student, DailyAttendance, ClassConfig, TeacherProfile } from '../types';
-import { DEFAULT_TEACHERS } from '../data/initialData';
+import { Student, DailyAttendance, ClassConfig, TeacherProfile, SuperAdminConfig } from '../types';
+import { DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN } from '../data/initialData';
 
 // Inisialisasi Firebase App
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
@@ -105,7 +105,7 @@ export async function initializeDefaultTeachers(): Promise<TeacherProfile[]> {
       return teachers;
     }
 
-    // Seed default teachers
+    // Seed default teachers jika kosong
     for (const t of DEFAULT_TEACHERS) {
       await setDoc(doc(db, path, t.id), t, { merge: true });
     }
@@ -117,21 +117,193 @@ export async function initializeDefaultTeachers(): Promise<TeacherProfile[]> {
 }
 
 /**
- * Cari Akun Guru berdasarkan NIP, Username, atau Email
+ * Berlangganan (Subscribe) Real-Time ke Daftar Akun Guru / Wali Kelas
+ */
+export function subscribeToTeachers(
+  onUpdate: (teachers: TeacherProfile[]) => void,
+  onError?: (err: any) => void
+): Unsubscribe {
+  const path = 'wali_kelas';
+  return onSnapshot(
+    collection(db, path),
+    (snapshot) => {
+      if (snapshot.empty) {
+        onUpdate(DEFAULT_TEACHERS);
+        return;
+      }
+      const list: TeacherProfile[] = [];
+      snapshot.forEach((docItem) => {
+        const data = docItem.data() as TeacherProfile;
+        list.push({
+          id: docItem.id,
+          nip: String(data.nip || ''),
+          nama: String(data.nama || ''),
+          email: String(data.email || ''),
+          role: data.role || 'wali_kelas',
+          assignedKelas: String(data.assignedKelas || ''),
+          kelasId: String(data.kelasId || ''),
+          noHp: data.noHp || '',
+          password: data.password || 'smkpgri1',
+        });
+      });
+      // Urutkan berdasarkan nama
+      list.sort((a, b) => a.nama.localeCompare(b.nama));
+      onUpdate(list);
+    },
+    (error) => {
+      console.error('Error onSnapshot teachers:', error);
+      if (onError) onError(error);
+      handleFirestoreError(error, OperationType.GET, path);
+    }
+  );
+}
+
+/**
+ * Simpan / Tambah Akun Guru / Wali Kelas ke Cloud Firestore
+ */
+export async function saveTeacherToFirestore(teacher: TeacherProfile): Promise<void> {
+  const docId = teacher.id || `teacher-${teacher.nip.replace(/\s+/g, '')}`;
+  const path = `wali_kelas/${docId}`;
+  try {
+    const payload = {
+      id: docId,
+      nip: teacher.nip.trim(),
+      nama: teacher.nama.trim(),
+      email: teacher.email.trim(),
+      role: teacher.role,
+      assignedKelas: teacher.assignedKelas.trim(),
+      kelasId: teacher.kelasId.trim(),
+      noHp: teacher.noHp ? teacher.noHp.trim() : '',
+      password: teacher.password || 'smkpgri1',
+    };
+    await setDoc(doc(db, 'wali_kelas', docId), payload, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+/**
+ * Hapus Akun Guru / Wali Kelas dari Cloud Firestore
+ */
+export async function deleteTeacherFromFirestore(teacherId: string): Promise<void> {
+  const path = `wali_kelas/${teacherId}`;
+  try {
+    await deleteDoc(doc(db, 'wali_kelas', teacherId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+/**
+ * Berlangganan (Subscribe) Real-Time ke Konfigurasi Super Admin
+ */
+export function subscribeToSuperAdminConfig(
+  onUpdate: (config: SuperAdminConfig) => void,
+  onError?: (err: any) => void
+): Unsubscribe {
+  const path = 'pengaturan/superadmin';
+  return onSnapshot(
+    doc(db, 'pengaturan', 'superadmin'),
+    (snapshot) => {
+      if (snapshot.exists()) {
+        onUpdate(snapshot.data() as SuperAdminConfig);
+      } else {
+        onUpdate(DEFAULT_SUPER_ADMIN);
+      }
+    },
+    (error) => {
+      console.warn('Real-time sync superadmin error:', error);
+      if (onError) onError(error);
+    }
+  );
+}
+
+/**
+ * Ambil Sekali Konfigurasi Super Admin dari Firestore
+ */
+export async function loadSuperAdminConfigFromFirestore(): Promise<SuperAdminConfig> {
+  try {
+    const snap = await getDoc(doc(db, 'pengaturan', 'superadmin'));
+    if (snap.exists()) {
+      return snap.data() as SuperAdminConfig;
+    }
+    // Seed default super admin jika belum ada
+    await setDoc(doc(db, 'pengaturan', 'superadmin'), DEFAULT_SUPER_ADMIN, { merge: true });
+    return DEFAULT_SUPER_ADMIN;
+  } catch (e) {
+    console.warn('Gagal membaca superadmin dari cloud, pakai default:', e);
+    return DEFAULT_SUPER_ADMIN;
+  }
+}
+
+/**
+ * Simpan / Ganti Konfigurasi Akun Super Admin di Cloud Firestore
+ */
+export async function saveSuperAdminConfigToFirestore(config: SuperAdminConfig): Promise<void> {
+  const path = 'pengaturan/superadmin';
+  try {
+    const payload: SuperAdminConfig = {
+      email: config.email.trim().toLowerCase(),
+      nama: config.nama.trim(),
+      nip: config.nip.trim(),
+      noHp: config.noHp ? config.noHp.trim() : '',
+      password: config.password || 'smkpgri1admin',
+      updatedAt: new Date().toISOString(),
+      updatedBy: config.updatedBy || 'Super Admin',
+    };
+    await setDoc(doc(db, 'pengaturan', 'superadmin'), payload, { merge: true });
+
+    // Perbarui juga akun super admin di koleksi wali_kelas agar sinkron saat login
+    const adminDocId = 'admin-kurikulum';
+    await setDoc(doc(db, 'wali_kelas', adminDocId), {
+      id: adminDocId,
+      nip: payload.nip,
+      nama: payload.nama,
+      email: payload.email,
+      role: 'admin',
+      assignedKelas: 'Semua Rombel',
+      kelasId: 'xii_tkj_2',
+      noHp: payload.noHp,
+      password: payload.password,
+    }, { merge: true });
+
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+/**
+ * Cari Akun Guru / Admin berdasarkan NIP, Username, atau Email
  */
 export async function findTeacherByNipOrIdentifier(identifier: string): Promise<TeacherProfile | null> {
   const clean = identifier.trim().replace(/\s+/g, '').toLowerCase();
+
+  // 1. Cek dulu konfigurasi Super Admin aktif
+  try {
+    const adminSnap = await getDoc(doc(db, 'pengaturan', 'superadmin'));
+    if (adminSnap.exists()) {
+      const adminData = adminSnap.data() as SuperAdminConfig;
+      const cleanAdminNip = adminData.nip.replace(/\s+/g, '').toLowerCase();
+      const cleanAdminEmail = adminData.email.toLowerCase();
+      if (clean === cleanAdminEmail || clean === cleanAdminNip || clean === 'admin') {
+        return {
+          id: 'admin-super',
+          nip: adminData.nip,
+          nama: adminData.nama,
+          email: adminData.email,
+          role: 'admin',
+          assignedKelas: 'Semua Rombel',
+          kelasId: 'xii_tkj_2',
+          noHp: adminData.noHp,
+          password: adminData.password || 'smkpgri1admin',
+        };
+      }
+    }
+  } catch (e) {
+    // continue to teachers collection
+  }
   
-  // Periksa dulu daftar lokal DEFAULT_TEACHERS
-  const localMatch = DEFAULT_TEACHERS.find((t) => {
-    const cleanNip = t.nip.replace(/\s+/g, '').toLowerCase();
-    const cleanEmail = t.email.toLowerCase();
-    return cleanNip === clean || cleanEmail === clean || t.id.toLowerCase() === clean;
-  });
-
-  if (localMatch) return localMatch;
-
-  // Coba query dari Firestore
+  // 2. Cek query dari Firestore wali_kelas
   try {
     const snap = await getDocs(collection(db, 'wali_kelas'));
     for (const docItem of snap.docs) {
@@ -145,6 +317,15 @@ export async function findTeacherByNipOrIdentifier(identifier: string): Promise<
   } catch (e) {
     console.warn('Gagal mencari guru di Firestore:', e);
   }
+
+  // 3. Fallback daftar lokal DEFAULT_TEACHERS
+  const localMatch = DEFAULT_TEACHERS.find((t) => {
+    const cleanNip = t.nip.replace(/\s+/g, '').toLowerCase();
+    const cleanEmail = t.email.toLowerCase();
+    return cleanNip === clean || cleanEmail === clean || t.id.toLowerCase() === clean;
+  });
+
+  if (localMatch) return localMatch;
 
   return null;
 }
@@ -171,7 +352,6 @@ export function subscribeToStudents(
         const data = docItem.data();
         const studentKelasId = data.kelasId || 'xii_tkj_2';
 
-        // Filter berdasarkan targetKelasId (atau tampilkan semua jika admin dan targetKelasId === 'all')
         if (targetKelasId === 'all' || studentKelasId === targetKelasId) {
           list.push({
             id: data.id || docItem.id,
@@ -185,7 +365,6 @@ export function subscribeToStudents(
           });
         }
       });
-      // Urutkan siswa berdasarkan NIS
       list.sort((a, b) => a.nis.localeCompare(b.nis));
       onUpdate(list);
     },
@@ -199,7 +378,6 @@ export function subscribeToStudents(
 
 /**
  * Listener Real-time untuk Data Presensi dari Cloud Firestore
- * Mendukung filter berdasarkan kelasId
  */
 export function subscribeToAttendance(
   onUpdate: (attendance: Record<string, DailyAttendance>) => void,
@@ -367,7 +545,6 @@ export async function deleteAllStudentsFromFirestore(targetKelasId: string = 'xi
     const snap = await getDocs(collection(db, path));
     if (snap.empty) return;
 
-    // Filter hanya siswa kelas target
     const batch = writeBatch(db);
     let count = 0;
     snap.docs.forEach((docItem) => {
@@ -394,8 +571,6 @@ export async function saveAttendanceToFirestore(
   dailyAttendance: DailyAttendance, 
   targetKelasId: string = 'xii_tkj_2'
 ): Promise<void> {
-  // Identifikasi dokumen: untuk XII TKJ 2 gunakan format asli date agar 100% kompatibel,
-  // untuk kelas lain gunakan prefix kelas_date
   const docId = targetKelasId === 'xii_tkj_2' 
     ? dailyAttendance.date 
     : `${targetKelasId}_${dailyAttendance.date}`;

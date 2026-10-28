@@ -44,9 +44,55 @@
           "type": "string",
           "description": "Nomor WhatsApp guru",
           "maxLength": 25
+        },
+        "password": {
+          "type": "string",
+          "description": "Kata sandi khusus guru",
+          "maxLength": 50
         }
       },
       "required": ["nip", "nama", "role", "assignedKelas", "kelasId"]
+    },
+    "SuperAdminConfig": {
+      "title": "SuperAdminConfig",
+      "description": "Konfigurasi akun Super Admin sistem presensi",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email resmi Super Admin",
+          "maxLength": 100
+        },
+        "nama": {
+          "type": "string",
+          "description": "Nama lengkap Super Admin / Kurikulum",
+          "maxLength": 100
+        },
+        "nip": {
+          "type": "string",
+          "description": "NIP Super Admin",
+          "maxLength": 50
+        },
+        "noHp": {
+          "type": "string",
+          "description": "Nomor WhatsApp",
+          "maxLength": 25
+        },
+        "password": {
+          "type": "string",
+          "description": "Kata sandi Super Admin",
+          "maxLength": 50
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Waktu pembaruan"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Nama pengubah"
+        }
+      },
+      "required": ["email", "nama", "nip"]
     },
     "Student": {
       "title": "Student",
@@ -191,7 +237,7 @@
     },
     "/pengaturan/{configId}": {
       "schema": "ClassConfig",
-      "description": "Konfigurasi identitas kelas dan sekolah"
+      "description": "Konfigurasi identitas kelas dan sekolah atau superadmin"
     }
   }
 }

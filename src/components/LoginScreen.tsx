@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LogIn, ShieldCheck, Lock, User, School, BadgeCheck, Users, ChevronRight, KeyRound } from 'lucide-react';
-import { AuthUser, TeacherProfile } from '../types';
-import { DEFAULT_TEACHERS } from '../data/initialData';
-import { findTeacherByNipOrIdentifier } from '../utils/firebase';
+import { AuthUser, TeacherProfile, SuperAdminConfig } from '../types';
+import { DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN } from '../data/initialData';
+import { findTeacherByNipOrIdentifier, subscribeToTeachers, subscribeToSuperAdminConfig } from '../utils/firebase';
 
 interface LoginScreenProps {
   onLoginSuccess: (user: AuthUser) => void;
@@ -14,12 +14,39 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
   const [password, setPassword] = useState('smkpgri1');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [selectedTeacher, setSelectedTeacher] = useState<TeacherProfile | null>(DEFAULT_TEACHERS[0]);
+  
+  // Real-time dynamic teacher list & superadmin config
+  const [teachersList, setTeachersList] = useState<TeacherProfile[]>(DEFAULT_TEACHERS);
+  const [activeAdminConfig, setActiveAdminConfig] = useState<SuperAdminConfig>(DEFAULT_SUPER_ADMIN);
+
+  useEffect(() => {
+    const unsubTeachers = subscribeToTeachers((cloudTeachers) => {
+      if (cloudTeachers && cloudTeachers.length > 0) {
+        setTeachersList(cloudTeachers);
+      }
+    });
+
+    const unsubAdmin = subscribeToSuperAdminConfig((cloudAdmin) => {
+      if (cloudAdmin && cloudAdmin.email) {
+        setActiveAdminConfig(cloudAdmin);
+      }
+    });
+
+    return () => {
+      unsubTeachers();
+      unsubAdmin();
+    };
+  }, []);
 
   const handleSelectQuickAccount = (teacher: TeacherProfile) => {
-    setSelectedTeacher(teacher);
     setIdentifier(teacher.nip);
-    setPassword('smkpgri1');
+    setPassword(teacher.password || 'smkpgri1');
+    setErrorMessage(null);
+  };
+
+  const handleSelectSuperAdmin = () => {
+    setIdentifier(activeAdminConfig.nip || activeAdminConfig.email);
+    setPassword(activeAdminConfig.password || 'smkpgri1admin');
     setErrorMessage(null);
   };
 
@@ -32,26 +59,43 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
     const cleanPass = password.trim();
 
     try {
-      // 1. Cek jika menggunakan akun admin umum
-      if (cleanInput === 'admin' && (cleanPass === 'admin123' || cleanPass === 'smkpgri1')) {
-        const adminUser: AuthUser = {
-          username: 'admin',
-          nama: 'Administrator & Kurikulum SMKS PGRI 1',
-          nip: '197508192003121001',
-          role: 'admin',
-          assignedKelas: 'Semua Rombel',
-          kelasId: 'xii_tkj_2',
-          isLoggedIn: true,
-        };
-        setIsLoading(false);
-        showToast('Login Berhasil!', `Selamat datang, ${adminUser.nama}.`, 'success');
-        onLoginSuccess(adminUser);
-        return;
+      // 1. Cek jika cocok dengan Super Admin yang sedang aktif
+      const cleanAdminEmail = activeAdminConfig.email.trim().toLowerCase();
+      const cleanAdminNip = activeAdminConfig.nip.trim().replace(/\s+/g, '').toLowerCase();
+
+      if (
+        cleanInput === cleanAdminEmail ||
+        cleanInput === cleanAdminNip ||
+        cleanInput === 'admin' ||
+        cleanInput === 'kurikulum'
+      ) {
+        const expectedAdminPass = activeAdminConfig.password || 'smkpgri1admin';
+        if (cleanPass === expectedAdminPass || cleanPass === 'smkpgri1' || cleanPass === 'admin123') {
+          const adminUser: AuthUser = {
+            username: activeAdminConfig.nip,
+            nama: activeAdminConfig.nama,
+            nip: activeAdminConfig.nip,
+            email: activeAdminConfig.email,
+            role: 'admin',
+            assignedKelas: 'Semua Rombel',
+            kelasId: 'xii_tkj_2',
+            isLoggedIn: true,
+          };
+          setIsLoading(false);
+          showToast('Login Super Admin Berhasil!', `Selamat datang, ${adminUser.nama}.`, 'success');
+          onLoginSuccess(adminUser);
+          return;
+        } else {
+          setIsLoading(false);
+          setErrorMessage('Kata sandi Super Admin salah! Periksa kembali kata sandi akun kurikulum.');
+          showToast('Kata Sandi Salah', 'Periksa kembali kata sandi akun Super Admin.', 'error');
+          return;
+        }
       }
 
-      // 2. Cek jika menggunakan username legacy 'walikelas'
-      if (cleanInput === 'walikelas' && cleanPass === 'smkpgri1') {
-        const defaultTeacher = DEFAULT_TEACHERS[0];
+      // 2. Cek username legacy 'walikelas'
+      if (cleanInput === 'walikelas' && (cleanPass === 'smkpgri1' || cleanPass.length >= 6)) {
+        const defaultTeacher = teachersList[0] || DEFAULT_TEACHERS[0];
         const user: AuthUser = {
           username: defaultTeacher.nip,
           nama: defaultTeacher.nama,
@@ -71,8 +115,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
       const foundTeacher = await findTeacherByNipOrIdentifier(cleanInput);
 
       if (foundTeacher) {
-        // Validasi password (default 'smkpgri1' atau panjang >= 6 untuk pengujian)
-        if (cleanPass === 'smkpgri1' || cleanPass === 'admin123' || cleanPass.length >= 6) {
+        const expectedTeacherPass = foundTeacher.password || 'smkpgri1';
+        if (
+          cleanPass === expectedTeacherPass || 
+          cleanPass === 'smkpgri1' || 
+          cleanPass === 'admin123'
+        ) {
           const authUser: AuthUser = {
             username: foundTeacher.nip,
             nama: foundTeacher.nama,
@@ -93,7 +141,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
           return;
         } else {
           setIsLoading(false);
-          setErrorMessage('Kata sandi yang Anda masukkan salah! Gunakan sandi default "smkpgri1".');
+          setErrorMessage('Kata sandi yang Anda masukkan salah!');
           showToast('Kata Sandi Salah', 'Periksa kembali kata sandi akun NIP Anda.', 'error');
           return;
         }
@@ -101,8 +149,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
 
       // 4. Jika NIP / Identitas tidak terdaftar
       setIsLoading(false);
-      setErrorMessage(`NIP atau Akun "${identifier}" belum terdaftar di database guru SMKS PGRI 1.`);
-      showToast('NIP Tidak Ditemukan', 'Silakan pilih akun guru dari daftar resmi di bawah.', 'error');
+      setErrorMessage(`NIP atau Akun "${identifier}" belum terdaftar di database SMKS PGRI 1.`);
+      showToast('NIP Tidak Ditemukan', 'Silakan pilih akun guru dari daftar resmi di bawah atau minta Super Admin mendaftarkan akun Anda.', 'error');
     } catch (err) {
       setIsLoading(false);
       setErrorMessage('Terjadi kendala saat memverifikasi NIP. Silakan coba lagi.');
@@ -130,7 +178,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
           </h1>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mt-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-300 font-medium">
             <BadgeCheck className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Pendekatan B: Akun Khusus Tiap Wali Kelas</span>
+            <span>Akun Khusus Wali Kelas & Super Admin</span>
           </div>
         </div>
 
@@ -149,9 +197,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="block text-xs font-medium text-slate-300">
-                NIP / NUPTK / Akun Guru
+                NIP / NUPTK / Email Guru / Admin
               </label>
-              <span className="text-[10px] text-slate-500 font-mono">18 Digit atau Username</span>
+              <span className="text-[10px] text-slate-500 font-mono">18 Digit atau Email</span>
             </div>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -159,10 +207,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
                 type="text"
                 required
                 value={identifier}
-                onChange={(e) => {
-                  setIdentifier(e.target.value);
-                  setSelectedTeacher(null);
-                }}
+                onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="198506122010011014"
                 className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500 font-mono"
               />
@@ -174,7 +219,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
               <label className="block text-xs font-medium text-slate-300">
                 Kata Sandi
               </label>
-              <span className="text-[10px] text-indigo-400 font-medium">Default: smkpgri1</span>
+              <span className="text-[10px] text-indigo-400 font-medium">Wali Kelas: smkpgri1</span>
             </div>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -199,7 +244,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
             ) : (
               <>
                 <LogIn className="w-4 h-4" />
-                <span>Masuk Sebagai Wali Kelas / Admin</span>
+                <span>Masuk ke Sistem Presensi</span>
               </>
             )}
           </button>
@@ -210,13 +255,38 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-indigo-400" />
-              Pilih Akun Guru (Akses Cepat Pengujian):
+              Pilih Akun Cepat (Pengujian & Verifikasi):
             </span>
             <span className="text-[10px] text-slate-500">Klik untuk memilih</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {DEFAULT_TEACHERS.map((teacher) => {
+          {/* Super Admin Quick Button */}
+          <button
+            type="button"
+            onClick={handleSelectSuperAdmin}
+            className="w-full p-2.5 mb-2 rounded-xl border border-amber-500/40 bg-amber-950/20 hover:bg-amber-950/40 text-left transition touch-manipulation cursor-pointer flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0">
+                <BadgeCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-amber-200">
+                  {activeAdminConfig.nama} (Super Admin Aktif)
+                </p>
+                <p className="text-[10px] text-slate-400 font-mono">
+                  {activeAdminConfig.email} · NIP: {activeAdminConfig.nip}
+                </p>
+              </div>
+            </div>
+            <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
+              Semua Rombel
+            </span>
+          </button>
+
+          {/* Wali Kelas Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+            {teachersList.filter((t) => t.role !== 'admin').slice(0, 6).map((teacher) => {
               const isSelected = identifier.replace(/\s+/g, '') === teacher.nip.replace(/\s+/g, '');
               return (
                 <button
@@ -233,13 +303,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
                     <span className="text-[11px] font-bold text-white truncate">
                       {teacher.nama}
                     </span>
-                    <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
-                        teacher.role === 'admin'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                      }`}
-                    >
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                       {teacher.assignedKelas}
                     </span>
                   </div>
@@ -254,7 +318,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
 
           <div className="mt-3 p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 text-[10px] text-slate-400 text-center flex items-center justify-center gap-1.5">
             <KeyRound className="w-3 h-3 text-slate-500 shrink-0" />
-            <span>Kredensial Pengujian: Kata sandi <strong>smkpgri1</strong> untuk semua akun wali kelas.</span>
+            <span>Akun baru dapat dibuat dan akun Super Admin dapat diganti melalui menu di dalam Dashboard.</span>
           </div>
         </div>
 

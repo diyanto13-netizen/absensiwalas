@@ -34,7 +34,20 @@ service cloud.firestore {
         data.assignedKelas is string && data.assignedKelas.size() <= 50 &&
         data.kelasId is string && data.kelasId.size() <= 50 &&
         (!('email' in data) || (data.email is string && data.email.size() <= 100)) &&
-        (!('noHp' in data) || (data.noHp is string && data.noHp.size() <= 25));
+        (!('noHp' in data) || (data.noHp is string && data.noHp.size() <= 25)) &&
+        (!('password' in data) || (data.password is string && data.password.size() <= 50));
+    }
+
+    // Helper Validasi Akun Super Admin
+    function isValidSuperAdminConfig(data) {
+      return data.keys().hasAll(['email', 'nama', 'nip']) &&
+        data.email is string && data.email.size() <= 100 &&
+        data.nama is string && data.nama.size() <= 100 &&
+        data.nip is string && data.nip.size() <= 50 &&
+        (!('noHp' in data) || (data.noHp is string && data.noHp.size() <= 25)) &&
+        (!('password' in data) || (data.password is string && data.password.size() <= 50)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100)) &&
+        (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 100));
     }
 
     // Helper Validasi Entitas Siswa
@@ -75,7 +88,7 @@ service cloud.firestore {
     match /wali_kelas/{teacherId} {
       allow read: if true;
       allow create, update: if isValidId(teacherId) && isValidTeacher(incoming());
-      allow delete: if isSuperAdmin();
+      allow delete: if isValidId(teacherId);
     }
 
     // Koleksi Master Data Siswa
@@ -94,10 +107,10 @@ service cloud.firestore {
       allow delete: if isValidId(date);
     }
 
-    // Koleksi Konfigurasi Rombel & Sekolah
+    // Koleksi Konfigurasi Rombel & Sekolah & Super Admin
     match /pengaturan/{configId} {
       allow read: if true;
-      allow create, update: if isValidId(configId) && isValidConfig(incoming());
+      allow create, update: if isValidId(configId) && (isValidConfig(incoming()) || isValidSuperAdminConfig(incoming()));
       allow delete: if isSuperAdmin();
     }
   }

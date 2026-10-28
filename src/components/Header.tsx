@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { School, Clock, LogOut, Activity, Cloud, RefreshCw, Shield, Layers, Check, ChevronDown } from 'lucide-react';
 import { ClassConfig, AuthUser, ActiveTab } from '../types';
 import { DEFAULT_ROMBELS } from '../data/initialData';
@@ -57,13 +57,22 @@ export const Header: React.FC<HeaderProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  const navItems: { id: ActiveTab; label: string; icon: string }[] = [
-    { id: 'absensi', label: 'Absensi Harian', icon: 'fa-clipboard-check' },
-    { id: 'siswa', label: 'Data Siswa', icon: 'fa-user-graduate' },
-    { id: 'rekap', label: 'Rekap & Analitik', icon: 'fa-chart-pie' },
-    { id: 'laporan', label: 'Cetak & WhatsApp', icon: 'fa-file-invoice' },
-    { id: 'pengaturan', label: 'Pengaturan', icon: 'fa-sliders' },
-  ];
+  const navItems = useMemo(() => {
+    const items: { id: ActiveTab; label: string; icon: string }[] = [
+      { id: 'absensi', label: 'Absensi Harian', icon: 'fa-clipboard-check' },
+      { id: 'siswa', label: 'Data Siswa', icon: 'fa-user-graduate' },
+      { id: 'rekap', label: 'Rekap & Analitik', icon: 'fa-chart-pie' },
+      { id: 'laporan', label: 'Cetak & WhatsApp', icon: 'fa-file-invoice' },
+    ];
+
+    // Hanya tampilkan menu Akun Wali Kelas untuk Super Admin / Kurikulum
+    if (user.role === 'admin') {
+      items.push({ id: 'akun', label: 'Kelola Akun Guru', icon: 'fa-users-gear' });
+    }
+
+    items.push({ id: 'pengaturan', label: 'Pengaturan', icon: 'fa-sliders' });
+    return items;
+  }, [user.role]);
 
   const currentRombel = DEFAULT_ROMBELS.find((r) => r.id === activeKelasId) || DEFAULT_ROMBELS[0];
 

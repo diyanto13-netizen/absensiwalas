@@ -14,6 +14,8 @@ interface PengaturanTabProps {
   onSaveFirebaseConfig: (newFirebaseConfig: FirebaseConfigState) => void;
   onRestoreData: (students: Student[], attendance: Record<string, DailyAttendance>, config: ClassConfig) => void;
   showToast: (title: string, message?: string, type?: 'success' | 'error' | 'info') => void;
+  onOpenAkunTab?: () => void;
+  isAdmin?: boolean;
 }
 
 export const PengaturanTab: React.FC<PengaturanTabProps> = ({
@@ -23,6 +25,8 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
   onSaveFirebaseConfig,
   onRestoreData,
   showToast,
+  onOpenAkunTab,
+  isAdmin = false,
 }) => {
   const [localConfig, setLocalConfig] = useState<ClassConfig>(config);
   const [localFirebase, setLocalFirebase] = useState<FirebaseConfigState>(firebaseConfig);
@@ -78,18 +82,31 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
       
       {/* Title */}
       <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
-            <Sliders className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
+              <Sliders className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight leading-tight">
+                Pengaturan Sistem & Rombel
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Kelola identitas kelas, kop surat resmi, akun wali kelas, dan konfigurasi Cloud Firestore.
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight leading-tight">
-              Pengaturan Sistem & Rombel
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Kelola identitas kelas, kop surat resmi, sinkronisasi Cloud Firestore, dan cadangan data.
-            </p>
-          </div>
+
+          {isAdmin && onOpenAkunTab && (
+            <button
+              type="button"
+              onClick={onOpenAkunTab}
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 flex items-center gap-2 transition cursor-pointer touch-manipulation self-start sm:self-auto"
+            >
+              <Shield className="w-4 h-4 text-indigo-200" />
+              <span>Kelola Akun Wali Kelas & Super Admin</span>
+            </button>
+          )}
         </div>
       </div>
 

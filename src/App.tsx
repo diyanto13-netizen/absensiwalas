@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  * Sistem Presensi Digital - SMKS PGRI 1 Kota Sukabumi
- * Pendekatan B: Akun Khusus Tiap Wali Kelas (Role-Based Login by NIP/Akun)
+ * Pendekatan B: Akun Khusus Tiap Wali Kelas & Manajemen Super Admin
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -18,10 +18,14 @@ import {
   loadAttendanceFromFirestore, saveAttendanceToFirestore, 
   saveConfigToFirestore, deleteStudentFromFirestore, deleteAllStudentsFromFirestore,
   subscribeToStudents, subscribeToAttendance, subscribeToConfig,
-  initializeDefaultTeachers
+  initializeDefaultTeachers, subscribeToTeachers, saveTeacherToFirestore, deleteTeacherFromFirestore,
+  subscribeToSuperAdminConfig, saveSuperAdminConfigToFirestore
 } from './utils/firebase';
-import { Student, DailyAttendance, ClassConfig, FirebaseConfigState, AuthUser, ActiveTab } from './types';
-import { DEFAULT_ROMBELS, INITIAL_CLASS_CONFIG } from './data/initialData';
+import { 
+  Student, DailyAttendance, ClassConfig, FirebaseConfigState, 
+  AuthUser, ActiveTab, TeacherProfile, SuperAdminConfig 
+} from './types';
+import { DEFAULT_ROMBELS, DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN, ALL_SMK_PGRI_1_ROMBELS } from './data/initialData';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { LoginScreen } from './components/LoginScreen';
@@ -30,6 +34,7 @@ import { SiswaTab } from './components/SiswaTab';
 import { RekapTab } from './components/RekapTab';
 import { LaporanTab } from './components/LaporanTab';
 import { PengaturanTab } from './components/PengaturanTab';
+import { AkunGuruTab } from './components/AkunGuruTab';
 import { Toast, ToastMessage } from './components/Toast';
 
 export default function App() {
@@ -58,6 +63,10 @@ export default function App() {
   const [firebaseConfig, setFirebaseConfigState] = useState<FirebaseConfigState>(() => getStoredFirebaseConfig());
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
+  // State Manajemen Akun Wali Kelas & Super Admin
+  const [teachers, setTeachers] = useState<TeacherProfile[]>(DEFAULT_TEACHERS);
+  const [superAdminConfig, setSuperAdminConfig] = useState<SuperAdminConfig>(DEFAULT_SUPER_ADMIN);
+
   // State Sistem Notifikasi Toast
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -75,11 +84,46 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Inisialisasi awal Master Guru di Firestore pada background
+  // Inisialisasi awal Master Guru & Berlangganan Real-Time Akun Guru & Super Admin
   useEffect(() => {
+    let isMounted = true;
+
+    // Seed jika perlu
     initializeDefaultTeachers().catch((err) => {
       console.warn('Inisialisasi akun guru:', err);
     });
+
+    // 1. Berlangganan real-time daftar akun wali kelas
+    const unsubTeachers = subscribeToTeachers(
+      (cloudTeachers) => {
+        if (!isMounted) return;
+        if (cloudTeachers && cloudTeachers.length > 0) {
+          setTeachers(cloudTeachers);
+        }
+      },
+      (err) => {
+        console.warn('Gagal subscribe teachers:', err);
+      }
+    );
+
+    // 2. Berlangganan real-time konfigurasi super admin
+    const unsubSuperAdmin = subscribeToSuperAdminConfig(
+      (cloudSuperAdmin) => {
+        if (!isMounted) return;
+        if (cloudSuperAdmin && cloudSuperAdmin.email) {
+          setSuperAdminConfig(cloudSuperAdmin);
+        }
+      },
+      (err) => {
+        console.warn('Gagal subscribe superadmin config:', err);
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      unsubTeachers();
+      unsubSuperAdmin();
+    };
   }, []);
 
   // Update data lokal saat activeKelasId berganti
@@ -89,21 +133,23 @@ export default function App() {
     let loadedConfig = getStoredConfig(activeKelasId);
 
     // Sesuaikan konfigurasi dengan rombel terpilih jika default
-    const rombelInfo = DEFAULT_ROMBELS.find((r) => r.id === activeKelasId);
+    const rombelInfo = ALL_SMK_PGRI_1_ROMBELS.find((r) => r.id === activeKelasId);
     if (rombelInfo) {
+      // Cari wali kelas yang ditugaskan ke rombel ini
+      const assignedTeacher = teachers.find((t) => t.kelasId === activeKelasId);
       loadedConfig = {
         ...loadedConfig,
         kelas: rombelInfo.nama,
         programKeahlian: rombelInfo.jurusan,
-        waliKelas: rombelInfo.waliKelasNama,
-        nipWaliKelas: rombelInfo.waliKelasNip,
+        waliKelas: assignedTeacher?.nama || rombelInfo.waliKelasNama || loadedConfig.waliKelas,
+        nipWaliKelas: assignedTeacher?.nip || rombelInfo.waliKelasNip || loadedConfig.nipWaliKelas,
       };
     }
 
     setStudents(loadedStudents);
     setAttendanceData(loadedAttendance);
     setConfig(loadedConfig);
-  }, [activeKelasId]);
+  }, [activeKelasId, teachers]);
 
   // Sinkronisasi Real-Time dengan Firebase Cloud Firestore (onSnapshot) sesuai Kelas Aktif
   useEffect(() => {
@@ -237,12 +283,51 @@ export default function App() {
   // Handler Ganti Kelas (Khusus Super Admin)
   const handleChangeKelas = (newKelasId: string) => {
     setActiveKelasId(newKelasId);
-    const targetRombel = DEFAULT_ROMBELS.find((r) => r.id === newKelasId);
+    const targetRombel = ALL_SMK_PGRI_1_ROMBELS.find((r) => r.id === newKelasId);
     showToast(
       'Beralih Rombel',
       `Menampilkan data presensi dan siswa untuk kelas ${targetRombel?.nama || newKelasId}.`,
       'info'
     );
+  };
+
+  // Handler Tambah / Update Akun Guru & Wali Kelas
+  const handleSaveTeacher = async (teacher: TeacherProfile) => {
+    await saveTeacherToFirestore(teacher);
+    setTeachers((prev) => {
+      const idx = prev.findIndex((t) => t.id === teacher.id || t.nip === teacher.nip);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = teacher;
+        return copy;
+      }
+      return [...prev, teacher];
+    });
+  };
+
+  // Handler Hapus Akun Guru
+  const handleDeleteTeacher = async (teacherId: string) => {
+    await deleteTeacherFromFirestore(teacherId);
+    setTeachers((prev) => prev.filter((t) => t.id !== teacherId));
+  };
+
+  // Handler Ganti Akun Super Admin
+  const handleSaveSuperAdminConfig = async (newConfig: SuperAdminConfig) => {
+    await saveSuperAdminConfigToFirestore(newConfig);
+    setSuperAdminConfig(newConfig);
+
+    // Jika user yang sedang login adalah super admin, perbarui sesi aktifnya
+    if (user?.role === 'admin') {
+      const updatedUser: AuthUser = {
+        ...user,
+        nama: newConfig.nama,
+        nip: newConfig.nip,
+        username: newConfig.nip,
+        email: newConfig.email,
+      };
+      setUser(updatedUser);
+      saveAuth(updatedUser);
+    }
   };
 
   // Handler Hapus Siswa (Lokal + Cloud Firestore)
@@ -308,7 +393,6 @@ export default function App() {
 
   // Handler Simpan Master Siswa (Lokal + Cloud Firestore)
   const handleSaveStudents = async (newStudents: Student[]) => {
-    // Pastikan tiap siswa memiliki kelasId
     const taggedStudents = newStudents.map((s) => ({
       ...s,
       kelasId: s.kelasId || activeKelasId,
@@ -472,6 +556,18 @@ export default function App() {
               />
             )}
 
+            {activeTab === 'akun' && user.role === 'admin' && (
+              <AkunGuruTab
+                currentUser={user}
+                teachers={teachers}
+                superAdminConfig={superAdminConfig}
+                onSaveTeacher={handleSaveTeacher}
+                onDeleteTeacher={handleDeleteTeacher}
+                onSaveSuperAdminConfig={handleSaveSuperAdminConfig}
+                showToast={showToast}
+              />
+            )}
+
             {activeTab === 'pengaturan' && (
               <PengaturanTab
                 config={config}
@@ -480,12 +576,18 @@ export default function App() {
                 onSaveFirebaseConfig={handleSaveFirebaseConfig}
                 onRestoreData={handleRestoreData}
                 showToast={showToast}
+                onOpenAkunTab={() => setActiveTab('akun')}
+                isAdmin={user.role === 'admin'}
               />
             )}
           </main>
 
-          {/* Mobile Bottom Navigation (Only visible on smartphones) */}
-          <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+          {/* Mobile Bottom Navigation */}
+          <BottomNav 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab} 
+            isAdmin={user.role === 'admin'} 
+          />
 
           {/* Desktop Footer (Hidden on print & hidden on mobile) */}
           <footer className="w-full border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 no-print z-10 hidden md:block">
@@ -500,7 +602,7 @@ export default function App() {
                 </span>
                 <span className="text-slate-700">|</span>
                 <span className="text-emerald-400 font-mono text-[10px]">
-                  Hak Akses: {user.role === 'admin' ? 'SUPER ADMIN' : `WALI KELAS (${user.assignedKelas})`}
+                  Hak Akses: {user.role === 'admin' ? 'SUPER ADMIN (PENGELOLA)' : `WALI KELAS (${user.assignedKelas})`}
                 </span>
               </div>
             </div>

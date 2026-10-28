@@ -49,14 +49,26 @@ export interface TeacherProfile {
   assignedKelas: string;
   kelasId: string;
   noHp?: string;
+  password?: string;
+}
+
+export interface SuperAdminConfig {
+  email: string;
+  nama: string;
+  nip: string;
+  noHp?: string;
+  password?: string;
+  updatedAt?: string;
+  updatedBy?: string;
 }
 
 export interface RombelInfo {
   id: string;
   nama: string;
   jurusan: string;
-  waliKelasNama: string;
-  waliKelasNip: string;
+  tingkat: 'X' | 'XI' | 'XII';
+  waliKelasNama?: string;
+  waliKelasNip?: string;
 }
 
 export interface FirebaseConfigState {
@@ -77,6 +89,7 @@ export interface AuthUser {
   assignedKelas: string;
   kelasId: string;
   isLoggedIn: boolean;
+  email?: string;
 }
 
-export type ActiveTab = 'absensi' | 'siswa' | 'rekap' | 'laporan' | 'pengaturan';
+export type ActiveTab = 'absensi' | 'siswa' | 'rekap' | 'laporan' | 'pengaturan' | 'akun';
