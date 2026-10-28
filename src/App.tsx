@@ -1,7 +1,8 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * Sistem Presensi Digital XII TKJ 2 - SMKS PGRI 1 Kota Sukabumi
+ * Sistem Presensi Digital - SMKS PGRI 1 Kota Sukabumi
+ * Pendekatan B: Akun Khusus Tiap Wali Kelas (Role-Based Login by NIP/Akun)
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -16,9 +17,11 @@ import {
   loadStudentsFromFirestore, saveStudentToFirestore, 
   loadAttendanceFromFirestore, saveAttendanceToFirestore, 
   saveConfigToFirestore, deleteStudentFromFirestore, deleteAllStudentsFromFirestore,
-  subscribeToStudents, subscribeToAttendance, subscribeToConfig
+  subscribeToStudents, subscribeToAttendance, subscribeToConfig,
+  initializeDefaultTeachers
 } from './utils/firebase';
 import { Student, DailyAttendance, ClassConfig, FirebaseConfigState, AuthUser, ActiveTab } from './types';
+import { DEFAULT_ROMBELS, INITIAL_CLASS_CONFIG } from './data/initialData';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { LoginScreen } from './components/LoginScreen';
@@ -33,6 +36,12 @@ export default function App() {
   // State Autentikasi Pengguna
   const [user, setUser] = useState<AuthUser | null>(() => getStoredAuth());
 
+  // State Rombel / Kelas Aktif
+  const [activeKelasId, setActiveKelasId] = useState<string>(() => {
+    const stored = getStoredAuth();
+    return stored?.kelasId || 'xii_tkj_2';
+  });
+
   // State Tab Navigasi Aktif
   const [activeTab, setActiveTab] = useState<ActiveTab>('absensi');
 
@@ -42,10 +51,10 @@ export default function App() {
     return today.toISOString().split('T')[0];
   });
 
-  // State Data Master
-  const [students, setStudents] = useState<Student[]>(() => getStoredStudents());
-  const [attendanceData, setAttendanceData] = useState<Record<string, DailyAttendance>>(() => getStoredAttendance());
-  const [config, setConfig] = useState<ClassConfig>(() => getStoredConfig());
+  // State Data Master (Tersinkronkan per Rombel / Kelas Aktif)
+  const [students, setStudents] = useState<Student[]>(() => getStoredStudents(activeKelasId));
+  const [attendanceData, setAttendanceData] = useState<Record<string, DailyAttendance>>(() => getStoredAttendance(activeKelasId));
+  const [config, setConfig] = useState<ClassConfig>(() => getStoredConfig(activeKelasId));
   const [firebaseConfig, setFirebaseConfigState] = useState<FirebaseConfigState>(() => getStoredFirebaseConfig());
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
@@ -66,38 +75,70 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Sinkronisasi Real-Time dengan Firebase Cloud Firestore (onSnapshot)
+  // Inisialisasi awal Master Guru di Firestore pada background
+  useEffect(() => {
+    initializeDefaultTeachers().catch((err) => {
+      console.warn('Inisialisasi akun guru:', err);
+    });
+  }, []);
+
+  // Update data lokal saat activeKelasId berganti
+  useEffect(() => {
+    const loadedStudents = getStoredStudents(activeKelasId);
+    const loadedAttendance = getStoredAttendance(activeKelasId);
+    let loadedConfig = getStoredConfig(activeKelasId);
+
+    // Sesuaikan konfigurasi dengan rombel terpilih jika default
+    const rombelInfo = DEFAULT_ROMBELS.find((r) => r.id === activeKelasId);
+    if (rombelInfo) {
+      loadedConfig = {
+        ...loadedConfig,
+        kelas: rombelInfo.nama,
+        programKeahlian: rombelInfo.jurusan,
+        waliKelas: rombelInfo.waliKelasNama,
+        nipWaliKelas: rombelInfo.waliKelasNip,
+      };
+    }
+
+    setStudents(loadedStudents);
+    setAttendanceData(loadedAttendance);
+    setConfig(loadedConfig);
+  }, [activeKelasId]);
+
+  // Sinkronisasi Real-Time dengan Firebase Cloud Firestore (onSnapshot) sesuai Kelas Aktif
   useEffect(() => {
     let isMounted = true;
     setIsSyncing(true);
 
-    // 1. Berlangganan (Subscribe) perubahan real-time data Siswa
+    // 1. Berlangganan (Subscribe) perubahan real-time data Siswa untuk kelas aktif
     const unsubStudents = subscribeToStudents(
       (cloudStudents) => {
         if (!isMounted) return;
         setIsSyncing(false);
         if (cloudStudents && cloudStudents.length > 0) {
           setStudents(cloudStudents);
-          saveStudents(cloudStudents);
+          saveStudents(cloudStudents, activeKelasId);
         }
       },
+      activeKelasId,
       (err) => {
-        console.warn('Real-time sync siswa offline:', err);
+        console.warn(`Real-time sync siswa [${activeKelasId}] offline:`, err);
         if (isMounted) setIsSyncing(false);
       }
     );
 
-    // 2. Berlangganan (Subscribe) perubahan real-time data Absensi
+    // 2. Berlangganan (Subscribe) perubahan real-time data Absensi untuk kelas aktif
     const unsubAttendance = subscribeToAttendance(
       (cloudAttendance) => {
         if (!isMounted) return;
         if (cloudAttendance && Object.keys(cloudAttendance).length > 0) {
           setAttendanceData(cloudAttendance);
-          saveAttendanceData(cloudAttendance);
+          saveAttendanceData(cloudAttendance, activeKelasId);
         }
       },
+      activeKelasId,
       (err) => {
-        console.warn('Real-time sync absensi offline:', err);
+        console.warn(`Real-time sync absensi [${activeKelasId}] offline:`, err);
       }
     );
 
@@ -107,37 +148,38 @@ export default function App() {
         if (!isMounted) return;
         if (cloudConfig && cloudConfig.kelas) {
           setConfig(cloudConfig);
-          saveConfig(cloudConfig);
+          saveConfig(cloudConfig, activeKelasId);
         }
       },
+      activeKelasId,
       (err) => {
-        console.warn('Real-time sync config offline:', err);
+        console.warn(`Real-time sync config [${activeKelasId}] offline:`, err);
       }
     );
 
-    // Initial check: jika cloud kosong, seed dari data default
+    // Initial check: jika cloud kosong dan kelas adalah xii_tkj_2, seed ke cloud
     (async () => {
       try {
         const [cloudSiswa, cloudAbsen] = await Promise.all([
-          loadStudentsFromFirestore(),
-          loadAttendanceFromFirestore(),
+          loadStudentsFromFirestore(activeKelasId),
+          loadAttendanceFromFirestore(activeKelasId),
         ]);
         if (!isMounted) return;
 
         if (cloudSiswa && cloudSiswa.length > 0) {
           setStudents(cloudSiswa);
-          saveStudents(cloudSiswa);
-        } else {
+          saveStudents(cloudSiswa, activeKelasId);
+        } else if (activeKelasId === 'xii_tkj_2') {
           // Inisialisasi awal ke cloud jika database kosong
-          const localStudents = getStoredStudents();
+          const localStudents = getStoredStudents(activeKelasId);
           for (const s of localStudents) {
-            await saveStudentToFirestore(s);
+            await saveStudentToFirestore({ ...s, kelasId: activeKelasId }, activeKelasId);
           }
         }
 
         if (cloudAbsen && Object.keys(cloudAbsen).length > 0) {
           setAttendanceData(cloudAbsen);
-          saveAttendanceData(cloudAbsen);
+          saveAttendanceData(cloudAbsen, activeKelasId);
         }
       } catch (e) {
         console.warn('Inisialisasi Firestore background:', e);
@@ -152,32 +194,36 @@ export default function App() {
       unsubAttendance();
       unsubConfig();
     };
-  }, []);
+  }, [activeKelasId]);
 
   // Handler Sinkronisasi Manual dari Header
   const handleManualSync = async () => {
     setIsSyncing(true);
-    showToast('Sinkronisasi Cloud...', 'Mengambil data terbaru langsung dari Cloud Firestore...', 'info');
+    showToast(
+      'Sinkronisasi Cloud...',
+      `Mengambil data terbaru kelas ${config.kelas} langsung dari Cloud Firestore...`,
+      'info'
+    );
     try {
       const [cloudStudents, cloudAttendance] = await Promise.all([
-        loadStudentsFromFirestore(),
-        loadAttendanceFromFirestore(),
+        loadStudentsFromFirestore(activeKelasId),
+        loadAttendanceFromFirestore(activeKelasId),
       ]);
 
       let syncCount = 0;
       if (cloudStudents && cloudStudents.length > 0) {
         setStudents(cloudStudents);
-        saveStudents(cloudStudents);
+        saveStudents(cloudStudents, activeKelasId);
         syncCount += cloudStudents.length;
       }
       if (cloudAttendance && Object.keys(cloudAttendance).length > 0) {
         setAttendanceData(cloudAttendance);
-        saveAttendanceData(cloudAttendance);
+        saveAttendanceData(cloudAttendance, activeKelasId);
       }
 
       showToast(
         'Sinkronisasi Berhasil!',
-        `Data ${syncCount > 0 ? `${syncCount} siswa & riwayat absensi` : 'terbaru'} sukses disinkronkan dengan Cloud Firestore.`,
+        `Data ${syncCount > 0 ? `${syncCount} siswa & riwayat absensi` : 'terbaru'} ${config.kelas} sukses disinkronkan dengan Cloud Firestore.`,
         'success'
       );
     } catch (err) {
@@ -186,6 +232,17 @@ export default function App() {
     } finally {
       setIsSyncing(false);
     }
+  };
+
+  // Handler Ganti Kelas (Khusus Super Admin)
+  const handleChangeKelas = (newKelasId: string) => {
+    setActiveKelasId(newKelasId);
+    const targetRombel = DEFAULT_ROMBELS.find((r) => r.id === newKelasId);
+    showToast(
+      'Beralih Rombel',
+      `Menampilkan data presensi dan siswa untuk kelas ${targetRombel?.nama || newKelasId}.`,
+      'info'
+    );
   };
 
   // Handler Hapus Siswa (Lokal + Cloud Firestore)
@@ -197,29 +254,30 @@ export default function App() {
     }
   };
 
-  // Handler Hapus Seluruh Siswa (Lokal + Cloud Firestore)
+  // Handler Hapus Seluruh Siswa Rombel Ini (Lokal + Cloud Firestore)
   const handleDeleteAllStudents = async () => {
     try {
-      await deleteAllStudentsFromFirestore();
+      await deleteAllStudentsFromFirestore(activeKelasId);
       setStudents([]);
-      saveStudents([]);
+      saveStudents([], activeKelasId);
     } catch (err) {
       console.warn('Gagal menghapus seluruh siswa dari Firestore:', err);
       setStudents([]);
-      saveStudents([]);
+      saveStudents([], activeKelasId);
     }
   };
 
   // Handler Login & Logout
   const handleLoginSuccess = (authUser: AuthUser) => {
     setUser(authUser);
+    setActiveKelasId(authUser.kelasId || 'xii_tkj_2');
     saveAuth(authUser);
   };
 
   const handleLogout = () => {
     setUser(null);
     saveAuth(null);
-    showToast('Berhasil Keluar', 'Sesi admin telah diakhiri dengan aman.', 'info');
+    showToast('Berhasil Keluar', 'Sesi login guru telah diakhiri dengan aman.', 'info');
   };
 
   // Handler Simpan Presensi Harian (Lokal + Cloud Firestore)
@@ -228,7 +286,8 @@ export default function App() {
       date,
       records,
       updatedAt: new Date().toISOString(),
-      updatedBy: user?.nama || 'Wali Kelas XII TKJ 2',
+      updatedBy: `${user?.nama || 'Wali Kelas'} (${user?.nip ? `NIP: ${user.nip}` : config.kelas})`,
+      kelasId: activeKelasId,
     };
 
     const newAttendance = {
@@ -237,11 +296,11 @@ export default function App() {
     };
 
     setAttendanceData(newAttendance);
-    saveAttendanceData(newAttendance);
+    saveAttendanceData(newAttendance, activeKelasId);
 
     // Sinkronisasi langsung ke Firebase Cloud Firestore
     try {
-      await saveAttendanceToFirestore(updatedDaily);
+      await saveAttendanceToFirestore(updatedDaily, activeKelasId);
     } catch (e) {
       console.warn('Disimpan secara lokal, akan disinkronkan ke Firestore saat terhubung.');
     }
@@ -249,13 +308,19 @@ export default function App() {
 
   // Handler Simpan Master Siswa (Lokal + Cloud Firestore)
   const handleSaveStudents = async (newStudents: Student[]) => {
-    setStudents(newStudents);
-    saveStudents(newStudents);
+    // Pastikan tiap siswa memiliki kelasId
+    const taggedStudents = newStudents.map((s) => ({
+      ...s,
+      kelasId: s.kelasId || activeKelasId,
+    }));
+
+    setStudents(taggedStudents);
+    saveStudents(taggedStudents, activeKelasId);
 
     // Simpan ke Cloud Firestore
     try {
-      for (const student of newStudents) {
-        await saveStudentToFirestore(student);
+      for (const student of taggedStudents) {
+        await saveStudentToFirestore(student, activeKelasId);
       }
     } catch (e) {
       console.warn('Data siswa tersimpan di cache lokal.');
@@ -265,10 +330,10 @@ export default function App() {
   // Handler Simpan Identitas Kelas
   const handleSaveConfig = async (newConfig: ClassConfig) => {
     setConfig(newConfig);
-    saveConfig(newConfig);
+    saveConfig(newConfig, activeKelasId);
 
     try {
-      await saveConfigToFirestore(newConfig);
+      await saveConfigToFirestore(newConfig, activeKelasId);
     } catch (e) {
       console.warn('Konfigurasi tersimpan lokal.');
     }
@@ -286,12 +351,17 @@ export default function App() {
     newAttendance: Record<string, DailyAttendance>,
     newConfig: ClassConfig
   ) => {
-    setStudents(newStudents);
-    saveStudents(newStudents);
+    const taggedStudents = newStudents.map((s) => ({
+      ...s,
+      kelasId: s.kelasId || activeKelasId,
+    }));
+
+    setStudents(taggedStudents);
+    saveStudents(taggedStudents, activeKelasId);
     setAttendanceData(newAttendance);
-    saveAttendanceData(newAttendance);
+    saveAttendanceData(newAttendance, activeKelasId);
     setConfig(newConfig);
-    saveConfig(newConfig);
+    saveConfig(newConfig, activeKelasId);
   };
 
   // Hitung Statistik Presensi Hari Ini Secara Real-time untuk Header
@@ -309,8 +379,6 @@ export default function App() {
         else if (rec.status === 'S') sakit++;
         else if (rec.status === 'I') izin++;
         else if (rec.status === 'A') alpa++;
-      } else {
-        // jika belum ada catatan pada tanggal ini, hitung sebagai belum diabsen
       }
     });
 
@@ -358,6 +426,8 @@ export default function App() {
             isSyncing={isSyncing}
             onManualSync={handleManualSync}
             onLogout={handleLogout}
+            activeKelasId={activeKelasId}
+            onChangeKelas={handleChangeKelas}
           />
 
           <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-6 z-10 relative">
@@ -421,11 +491,18 @@ export default function App() {
           <footer className="w-full border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 no-print z-10 hidden md:block">
             <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
               <p>
-                Sistem Presensi Digital &copy; 2026 · <strong>SMKS PGRI 1 Kota Sukabumi</strong> · Kelas XII TKJ 2
+                Sistem Presensi Digital &copy; 2026 · <strong>SMKS PGRI 1 Kota Sukabumi</strong> · {config.kelas}
               </p>
-              <p className="text-[11px] text-slate-400">
-                Wali Kelas: <span className="text-indigo-400 font-medium">{config.waliKelas}</span>
-              </p>
+              <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                <span>
+                  Wali Kelas: <strong className="text-indigo-400 font-medium">{config.waliKelas}</strong>
+                  {config.nipWaliKelas ? ` (NIP: ${config.nipWaliKelas})` : ''}
+                </span>
+                <span className="text-slate-700">|</span>
+                <span className="text-emerald-400 font-mono text-[10px]">
+                  Hak Akses: {user.role === 'admin' ? 'SUPER ADMIN' : `WALI KELAS (${user.assignedKelas})`}
+                </span>
+              </div>
             </div>
           </footer>
         </>

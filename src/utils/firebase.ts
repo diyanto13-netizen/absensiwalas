@@ -2,6 +2,7 @@
  * @license
  * Sistem Presensi Digital - SMKS PGRI 1 Kota Sukabumi
  * Modul Konfigurasi & Inisialisasi Firebase Cloud Firestore
+ * Mendukung Pendekatan B: Akun Khusus Tiap Wali Kelas (Role-Based Login by NIP/Akun)
  */
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -12,7 +13,8 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { Student, DailyAttendance, ClassConfig } from '../types';
+import { Student, DailyAttendance, ClassConfig, TeacherProfile } from '../types';
+import { DEFAULT_TEACHERS } from '../data/initialData';
 
 // Inisialisasi Firebase App
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
@@ -88,11 +90,72 @@ export async function testConnection(): Promise<boolean> {
 testConnection();
 
 /**
+ * Inisialisasi / Seed data master akun Wali Kelas ke Firestore
+ */
+export async function initializeDefaultTeachers(): Promise<TeacherProfile[]> {
+  const path = 'wali_kelas';
+  try {
+    const snap = await getDocs(collection(db, path));
+    if (!snap.empty) {
+      const teachers: TeacherProfile[] = [];
+      snap.forEach((d) => {
+        const item = d.data() as TeacherProfile;
+        teachers.push({ ...item, id: d.id });
+      });
+      return teachers;
+    }
+
+    // Seed default teachers
+    for (const t of DEFAULT_TEACHERS) {
+      await setDoc(doc(db, path, t.id), t, { merge: true });
+    }
+    return DEFAULT_TEACHERS;
+  } catch (err) {
+    console.warn('Fallback ke daftar default guru lokal:', err);
+    return DEFAULT_TEACHERS;
+  }
+}
+
+/**
+ * Cari Akun Guru berdasarkan NIP, Username, atau Email
+ */
+export async function findTeacherByNipOrIdentifier(identifier: string): Promise<TeacherProfile | null> {
+  const clean = identifier.trim().replace(/\s+/g, '').toLowerCase();
+  
+  // Periksa dulu daftar lokal DEFAULT_TEACHERS
+  const localMatch = DEFAULT_TEACHERS.find((t) => {
+    const cleanNip = t.nip.replace(/\s+/g, '').toLowerCase();
+    const cleanEmail = t.email.toLowerCase();
+    return cleanNip === clean || cleanEmail === clean || t.id.toLowerCase() === clean;
+  });
+
+  if (localMatch) return localMatch;
+
+  // Coba query dari Firestore
+  try {
+    const snap = await getDocs(collection(db, 'wali_kelas'));
+    for (const docItem of snap.docs) {
+      const data = docItem.data() as TeacherProfile;
+      const cleanNip = (data.nip || '').replace(/\s+/g, '').toLowerCase();
+      const cleanEmail = (data.email || '').toLowerCase();
+      if (cleanNip === clean || cleanEmail === clean || docItem.id.toLowerCase() === clean) {
+        return { ...data, id: docItem.id };
+      }
+    }
+  } catch (e) {
+    console.warn('Gagal mencari guru di Firestore:', e);
+  }
+
+  return null;
+}
+
+/**
  * Listener Real-time untuk Data Siswa dari Cloud Firestore
- * Memastikan semua browser dan perangkat HP guru langsung sinkron
+ * Mendukung filter berdasarkan kelasId (isolasi data antar rombel)
  */
 export function subscribeToStudents(
   onUpdate: (students: Student[]) => void,
+  targetKelasId: string = 'xii_tkj_2',
   onError?: (err: any) => void
 ): Unsubscribe {
   const path = 'siswa';
@@ -106,15 +169,21 @@ export function subscribeToStudents(
       const list: Student[] = [];
       snapshot.forEach((docItem) => {
         const data = docItem.data();
-        list.push({
-          id: data.id || docItem.id,
-          nis: String(data.nis || ''),
-          nama: String(data.nama || ''),
-          jenisKelamin: data.jenisKelamin === 'P' ? 'P' : 'L',
-          noHpOrtu: String(data.noHpOrtu || ''),
-          alamat: data.alamat || '',
-          catatan: data.catatan || '',
-        });
+        const studentKelasId = data.kelasId || 'xii_tkj_2';
+
+        // Filter berdasarkan targetKelasId (atau tampilkan semua jika admin dan targetKelasId === 'all')
+        if (targetKelasId === 'all' || studentKelasId === targetKelasId) {
+          list.push({
+            id: data.id || docItem.id,
+            nis: String(data.nis || ''),
+            nama: String(data.nama || ''),
+            jenisKelamin: data.jenisKelamin === 'P' ? 'P' : 'L',
+            noHpOrtu: String(data.noHpOrtu || ''),
+            alamat: data.alamat || '',
+            catatan: data.catatan || '',
+            kelasId: studentKelasId,
+          });
+        }
       });
       // Urutkan siswa berdasarkan NIS
       list.sort((a, b) => a.nis.localeCompare(b.nis));
@@ -130,9 +199,11 @@ export function subscribeToStudents(
 
 /**
  * Listener Real-time untuk Data Presensi dari Cloud Firestore
+ * Mendukung filter berdasarkan kelasId
  */
 export function subscribeToAttendance(
   onUpdate: (attendance: Record<string, DailyAttendance>) => void,
+  targetKelasId: string = 'xii_tkj_2',
   onError?: (err: any) => void
 ): Unsubscribe {
   const path = 'absensi';
@@ -142,12 +213,17 @@ export function subscribeToAttendance(
       const data: Record<string, DailyAttendance> = {};
       snapshot.forEach((docItem) => {
         const item = docItem.data();
-        data[docItem.id] = {
-          date: item.date || docItem.id,
-          records: item.records || {},
-          updatedAt: item.updatedAt || new Date().toISOString(),
-          updatedBy: item.updatedBy || 'Wali Kelas XII TKJ 2',
-        };
+        const docKelasId = item.kelasId || 'xii_tkj_2';
+
+        if (targetKelasId === 'all' || docKelasId === targetKelasId) {
+          data[docItem.id] = {
+            date: item.date || docItem.id,
+            records: item.records || {},
+            updatedAt: item.updatedAt || new Date().toISOString(),
+            updatedBy: item.updatedBy || 'Wali Kelas',
+            kelasId: docKelasId,
+          };
+        }
       });
       onUpdate(data);
     },
@@ -164,11 +240,13 @@ export function subscribeToAttendance(
  */
 export function subscribeToConfig(
   onUpdate: (config: ClassConfig) => void,
+  kelasId: string = 'xii_tkj_2',
   onError?: (err: any) => void
 ): Unsubscribe {
-  const path = 'pengaturan/kelas_xii_tkj_2';
+  const configDocId = `kelas_${kelasId}`;
+  const path = `pengaturan/${configDocId}`;
   return onSnapshot(
-    doc(db, 'pengaturan', 'kelas_xii_tkj_2'),
+    doc(db, 'pengaturan', configDocId),
     (snapshot) => {
       if (snapshot.exists()) {
         onUpdate(snapshot.data() as ClassConfig);
@@ -185,7 +263,7 @@ export function subscribeToConfig(
 /**
  * Ambil Sekali (Fetch One-Time) Data Siswa dari Cloud Firestore
  */
-export async function loadStudentsFromFirestore(): Promise<Student[] | null> {
+export async function loadStudentsFromFirestore(targetKelasId: string = 'xii_tkj_2'): Promise<Student[] | null> {
   const path = 'siswa';
   try {
     const snap = await getDocs(collection(db, path));
@@ -193,15 +271,20 @@ export async function loadStudentsFromFirestore(): Promise<Student[] | null> {
     const list: Student[] = [];
     snap.forEach((docItem) => {
       const data = docItem.data();
-      list.push({
-        id: data.id || docItem.id,
-        nis: String(data.nis || ''),
-        nama: String(data.nama || ''),
-        jenisKelamin: data.jenisKelamin === 'P' ? 'P' : 'L',
-        noHpOrtu: String(data.noHpOrtu || ''),
-        alamat: data.alamat || '',
-        catatan: data.catatan || '',
-      });
+      const studentKelasId = data.kelasId || 'xii_tkj_2';
+
+      if (targetKelasId === 'all' || studentKelasId === targetKelasId) {
+        list.push({
+          id: data.id || docItem.id,
+          nis: String(data.nis || ''),
+          nama: String(data.nama || ''),
+          jenisKelamin: data.jenisKelamin === 'P' ? 'P' : 'L',
+          noHpOrtu: String(data.noHpOrtu || ''),
+          alamat: data.alamat || '',
+          catatan: data.catatan || '',
+          kelasId: studentKelasId,
+        });
+      }
     });
     list.sort((a, b) => a.nis.localeCompare(b.nis));
     return list;
@@ -214,7 +297,7 @@ export async function loadStudentsFromFirestore(): Promise<Student[] | null> {
 /**
  * Ambil Sekali Data Presensi dari Cloud Firestore
  */
-export async function loadAttendanceFromFirestore(): Promise<Record<string, DailyAttendance> | null> {
+export async function loadAttendanceFromFirestore(targetKelasId: string = 'xii_tkj_2'): Promise<Record<string, DailyAttendance> | null> {
   const path = 'absensi';
   try {
     const snap = await getDocs(collection(db, path));
@@ -222,12 +305,17 @@ export async function loadAttendanceFromFirestore(): Promise<Record<string, Dail
     const data: Record<string, DailyAttendance> = {};
     snap.forEach((docItem) => {
       const item = docItem.data();
-      data[docItem.id] = {
-        date: item.date || docItem.id,
-        records: item.records || {},
-        updatedAt: item.updatedAt || new Date().toISOString(),
-        updatedBy: item.updatedBy || 'Wali Kelas XII TKJ 2',
-      };
+      const docKelasId = item.kelasId || 'xii_tkj_2';
+
+      if (targetKelasId === 'all' || docKelasId === targetKelasId) {
+        data[docItem.id] = {
+          date: item.date || docItem.id,
+          records: item.records || {},
+          updatedAt: item.updatedAt || new Date().toISOString(),
+          updatedBy: item.updatedBy || 'Wali Kelas',
+          kelasId: docKelasId,
+        };
+      }
     });
     return data;
   } catch (error) {
@@ -239,7 +327,7 @@ export async function loadAttendanceFromFirestore(): Promise<Record<string, Dail
 /**
  * Simpan / Sinkronkan Satu Siswa ke Cloud Firestore
  */
-export async function saveStudentToFirestore(student: Student): Promise<void> {
+export async function saveStudentToFirestore(student: Student, targetKelasId: string = 'xii_tkj_2'): Promise<void> {
   const path = `siswa/${student.id}`;
   try {
     const payload = {
@@ -250,6 +338,7 @@ export async function saveStudentToFirestore(student: Student): Promise<void> {
       noHpOrtu: student.noHpOrtu,
       alamat: student.alamat || '',
       catatan: student.catatan || '',
+      kelasId: student.kelasId || targetKelasId,
     };
     await setDoc(doc(db, 'siswa', student.id), payload, { merge: true });
   } catch (error) {
@@ -270,20 +359,29 @@ export async function deleteStudentFromFirestore(studentId: string): Promise<voi
 }
 
 /**
- * Hapus Seluruh Siswa dari Cloud Firestore (Batch Delete)
+ * Hapus Seluruh Siswa Rombel Ini dari Cloud Firestore (Batch Delete)
  */
-export async function deleteAllStudentsFromFirestore(): Promise<void> {
+export async function deleteAllStudentsFromFirestore(targetKelasId: string = 'xii_tkj_2'): Promise<void> {
   const path = 'siswa';
   try {
     const snap = await getDocs(collection(db, path));
     if (snap.empty) return;
 
-    // Firestore batched write supports up to 500 operations
+    // Filter hanya siswa kelas target
     const batch = writeBatch(db);
+    let count = 0;
     snap.docs.forEach((docItem) => {
-      batch.delete(docItem.ref);
+      const data = docItem.data();
+      const kId = data.kelasId || 'xii_tkj_2';
+      if (targetKelasId === 'all' || kId === targetKelasId) {
+        batch.delete(docItem.ref);
+        count++;
+      }
     });
-    await batch.commit();
+
+    if (count > 0) {
+      await batch.commit();
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
@@ -292,8 +390,17 @@ export async function deleteAllStudentsFromFirestore(): Promise<void> {
 /**
  * Simpan / Sinkronkan Catatan Presensi Harian ke Cloud Firestore
  */
-export async function saveAttendanceToFirestore(dailyAttendance: DailyAttendance): Promise<void> {
-  const path = `absensi/${dailyAttendance.date}`;
+export async function saveAttendanceToFirestore(
+  dailyAttendance: DailyAttendance, 
+  targetKelasId: string = 'xii_tkj_2'
+): Promise<void> {
+  // Identifikasi dokumen: untuk XII TKJ 2 gunakan format asli date agar 100% kompatibel,
+  // untuk kelas lain gunakan prefix kelas_date
+  const docId = targetKelasId === 'xii_tkj_2' 
+    ? dailyAttendance.date 
+    : `${targetKelasId}_${dailyAttendance.date}`;
+    
+  const path = `absensi/${docId}`;
   try {
     const cleanRecords: Record<string, any> = {};
     for (const [key, rec] of Object.entries(dailyAttendance.records || {})) {
@@ -309,10 +416,11 @@ export async function saveAttendanceToFirestore(dailyAttendance: DailyAttendance
       date: dailyAttendance.date,
       records: cleanRecords,
       updatedAt: dailyAttendance.updatedAt || new Date().toISOString(),
-      updatedBy: dailyAttendance.updatedBy || 'Wali Kelas XII TKJ 2',
+      updatedBy: dailyAttendance.updatedBy || 'Wali Kelas',
+      kelasId: targetKelasId,
     };
 
-    await setDoc(doc(db, 'absensi', dailyAttendance.date), payload, { merge: true });
+    await setDoc(doc(db, 'absensi', docId), payload, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -321,8 +429,9 @@ export async function saveAttendanceToFirestore(dailyAttendance: DailyAttendance
 /**
  * Simpan Konfigurasi Kelas ke Cloud Firestore
  */
-export async function saveConfigToFirestore(config: ClassConfig): Promise<void> {
-  const path = 'pengaturan/kelas_xii_tkj_2';
+export async function saveConfigToFirestore(config: ClassConfig, kelasId: string = 'xii_tkj_2'): Promise<void> {
+  const configDocId = `kelas_${kelasId}`;
+  const path = `pengaturan/${configDocId}`;
   try {
     const payload = {
       namaSekolah: config.namaSekolah,
@@ -336,7 +445,7 @@ export async function saveConfigToFirestore(config: ClassConfig): Promise<void> 
       semester: config.semester,
       alamatSekolah: config.alamatSekolah || '',
     };
-    await setDoc(doc(db, 'pengaturan', 'kelas_xii_tkj_2'), payload, { merge: true });
+    await setDoc(doc(db, 'pengaturan', configDocId), payload, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }

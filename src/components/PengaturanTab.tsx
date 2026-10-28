@@ -277,7 +277,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
-                onClick={exportBackupJSON}
+                onClick={() => exportBackupJSON()}
                 className="flex-1 h-10 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 flex items-center justify-center gap-2 transition cursor-pointer touch-manipulation"
               >
                 <Download className="w-3.5 h-3.5 text-indigo-400" />

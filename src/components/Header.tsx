@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { School, Users, CheckCircle, Clock, LogOut, Activity, Calendar, ShieldCheck, Cloud, RefreshCw } from 'lucide-react';
+import { School, Clock, LogOut, Activity, Cloud, RefreshCw, Shield, Layers, Check, ChevronDown } from 'lucide-react';
 import { ClassConfig, AuthUser, ActiveTab } from '../types';
+import { DEFAULT_ROMBELS } from '../data/initialData';
 
 interface HeaderProps {
   config: ClassConfig;
@@ -19,6 +20,8 @@ interface HeaderProps {
   isSyncing?: boolean;
   onManualSync?: () => void;
   onLogout: () => void;
+  activeKelasId: string;
+  onChangeKelas?: (newKelasId: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -31,9 +34,12 @@ export const Header: React.FC<HeaderProps> = ({
   isSyncing = false,
   onManualSync,
   onLogout,
+  activeKelasId,
+  onChangeKelas,
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentDate, setCurrentDate] = useState<string>('');
+  const [showClassDropdown, setShowClassDropdown] = useState<boolean>(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -59,6 +65,8 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'pengaturan', label: 'Pengaturan', icon: 'fa-sliders' },
   ];
 
+  const currentRombel = DEFAULT_ROMBELS.find((r) => r.id === activeKelasId) || DEFAULT_ROMBELS[0];
+
   return (
     <header className="sticky top-0 z-40 w-full bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 shadow-md">
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-3">
@@ -74,10 +82,58 @@ export const Header: React.FC<HeaderProps> = ({
                 <h1 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">
                   SMKS PGRI 1
                 </h1>
-                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 shrink-0">
-                  {config.kelas}
-                </span>
+
+                {/* Class Badge or Super Admin Class Switcher */}
+                {user.role === 'admin' ? (
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowClassDropdown(!showClassDropdown)}
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-200 shrink-0 cursor-pointer transition touch-manipulation"
+                      title="Klik untuk beralih kelas rombel (Mode Super Admin)"
+                    >
+                      <Layers className="w-3 h-3 text-indigo-400" />
+                      <span>{currentRombel.nama}</span>
+                      <ChevronDown className="w-3 h-3 text-indigo-400" />
+                    </button>
+
+                    {showClassDropdown && (
+                      <div className="absolute left-0 mt-1.5 w-52 rounded-xl glass-panel border border-slate-700 shadow-2xl py-1.5 z-50 animate-in fade-in">
+                        <div className="px-3 py-1 border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                          Pilih Rombel (Super Admin)
+                        </div>
+                        {DEFAULT_ROMBELS.map((rombel) => {
+                          const isAct = rombel.id === activeKelasId;
+                          return (
+                            <button
+                              key={rombel.id}
+                              type="button"
+                              onClick={() => {
+                                if (onChangeKelas) onChangeKelas(rombel.id);
+                                setShowClassDropdown(false);
+                              }}
+                              className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between transition cursor-pointer ${
+                                isAct ? 'bg-indigo-600/30 text-white font-bold' : 'text-slate-300 hover:bg-slate-800/80'
+                              }`}
+                            >
+                              <div>
+                                <p className="font-semibold">{rombel.nama}</p>
+                                <p className="text-[10px] text-slate-400">{rombel.jurusan}</p>
+                              </div>
+                              {isAct && <Check className="w-3.5 h-3.5 text-indigo-400" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 shrink-0">
+                    {user.assignedKelas || config.kelas}
+                  </span>
+                )}
               </div>
+
               <p className="text-[11px] text-slate-400 truncate mt-0.5 hidden xs:block">
                 <span>{config.programKeahlian}</span>
                 <span className="mx-1.5 text-slate-600">·</span>
@@ -89,7 +145,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Real-time stats & Mobile Header Elements */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             
-            {/* Clock & Date (Hidden on small mobile to save precious screen space) */}
+            {/* Clock & Date */}
             <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
               <Clock className="w-3.5 h-3.5 text-indigo-400" />
               <span>{currentTime}</span>
@@ -97,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{currentDate}</span>
             </div>
 
-            {/* Attendance Rate Badge (Compact on mobile) */}
+            {/* Attendance Rate Badge */}
             <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs">
               <Activity className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden sm:inline text-emerald-300/90 text-[11px]">Hadir:</span>
@@ -142,8 +198,16 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Teacher Profile & Logout */}
             <div className="flex items-center gap-1.5 sm:gap-2 pl-1 sm:pl-2 border-l border-slate-800">
               <div className="text-right hidden xl:block">
-                <p className="text-xs font-semibold text-slate-200 leading-tight">{user.nama}</p>
-                <p className="text-[10px] text-slate-400">Wali Kelas XII TKJ 2</p>
+                <div className="flex items-center justify-end gap-1">
+                  <p className="text-xs font-semibold text-slate-200 leading-tight">{user.nama}</p>
+                  {user.role === 'admin' ? (
+                    <Shield className="w-3 h-3 text-amber-400" />
+                  ) : null}
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  {user.role === 'admin' ? 'Super Admin / Kurikulum' : `Wali Kelas ${user.assignedKelas}`}
+                  {user.nip ? ` · ${user.nip}` : ''}
+                </p>
               </div>
               <button
                 onClick={onLogout}
@@ -157,7 +221,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Desktop Top Nav Items (Hidden on Mobile, replaced by BottomNav) */}
+        {/* Desktop Top Nav Items */}
         <nav className="hidden md:flex items-center gap-1.5 mt-3 pt-2.5 border-t border-slate-800/80">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;

@@ -9,6 +9,7 @@ export interface Student {
   noHpOrtu: string;
   alamat?: string;
   catatan?: string;
+  kelasId?: string;
 }
 
 export interface AttendanceRecord {
@@ -23,6 +24,7 @@ export interface DailyAttendance {
   records: Record<string, AttendanceRecord>; // key: studentId
   updatedAt: string;
   updatedBy?: string;
+  kelasId?: string;
 }
 
 export interface ClassConfig {
@@ -38,6 +40,25 @@ export interface ClassConfig {
   alamatSekolah: string;
 }
 
+export interface TeacherProfile {
+  id: string;
+  nip: string;
+  nama: string;
+  email: string;
+  role: 'wali_kelas' | 'kurikulum' | 'admin';
+  assignedKelas: string;
+  kelasId: string;
+  noHp?: string;
+}
+
+export interface RombelInfo {
+  id: string;
+  nama: string;
+  jurusan: string;
+  waliKelasNama: string;
+  waliKelasNip: string;
+}
+
 export interface FirebaseConfigState {
   apiKey: string;
   authDomain: string;
@@ -51,7 +72,10 @@ export interface FirebaseConfigState {
 export interface AuthUser {
   username: string;
   nama: string;
-  role: 'admin' | 'guru';
+  nip: string;
+  role: 'wali_kelas' | 'kurikulum' | 'admin';
+  assignedKelas: string;
+  kelasId: string;
   isLoggedIn: boolean;
 }
 

@@ -6,39 +6,58 @@ const KEYS = {
   ATTENDANCE: 'smk_pgri1_presensi_attendance_v1',
   CONFIG: 'smk_pgri1_presensi_config_v1',
   FIREBASE: 'smk_pgri1_presensi_firebase_v1',
-  AUTH: 'smk_pgri1_presensi_auth_v1',
+  AUTH: 'smk_pgri1_presensi_auth_v2', // v2 for Pendekatan B role-based
 };
 
-export const getStoredStudents = (): Student[] => {
+export const getStoredStudents = (kelasId: string = 'xii_tkj_2'): Student[] => {
   try {
-    const raw = localStorage.getItem(KEYS.STUDENTS);
+    const raw = localStorage.getItem(`${KEYS.STUDENTS}_${kelasId}`);
     if (!raw) {
-      saveStudents(INITIAL_STUDENTS);
-      return INITIAL_STUDENTS;
+      // Jika XII TKJ 2, gunakan data awal siswa
+      if (kelasId === 'xii_tkj_2') {
+        const legacyRaw = localStorage.getItem('smk_pgri1_presensi_students_v1');
+        if (legacyRaw) {
+          return JSON.parse(legacyRaw);
+        }
+        saveStudents(INITIAL_STUDENTS, kelasId);
+        return INITIAL_STUDENTS;
+      }
+      return [];
     }
     return JSON.parse(raw);
   } catch (e) {
     console.error('Error reading students from storage', e);
-    return INITIAL_STUDENTS;
+    return kelasId === 'xii_tkj_2' ? INITIAL_STUDENTS : [];
   }
 };
 
-export const saveStudents = (students: Student[]): void => {
+export const saveStudents = (students: Student[], kelasId: string = 'xii_tkj_2'): void => {
   try {
-    localStorage.setItem(KEYS.STUDENTS, JSON.stringify(students));
+    localStorage.setItem(`${KEYS.STUDENTS}_${kelasId}`, JSON.stringify(students));
+    // Simpan juga ke key legacy untuk kompatibilitas jika xii_tkj_2
+    if (kelasId === 'xii_tkj_2') {
+      localStorage.setItem('smk_pgri1_presensi_students_v1', JSON.stringify(students));
+    }
   } catch (e) {
     console.error('Error saving students to storage', e);
   }
 };
 
-export const getStoredAttendance = (): Record<string, DailyAttendance> => {
+export const getStoredAttendance = (kelasId: string = 'xii_tkj_2'): Record<string, DailyAttendance> => {
   try {
-    const raw = localStorage.getItem(KEYS.ATTENDANCE);
+    const raw = localStorage.getItem(`${KEYS.ATTENDANCE}_${kelasId}`);
     if (!raw) {
-      const students = getStoredStudents();
-      const initial = generateInitialAttendanceData(students);
-      saveAttendanceData(initial);
-      return initial;
+      if (kelasId === 'xii_tkj_2') {
+        const legacyRaw = localStorage.getItem('smk_pgri1_presensi_attendance_v1');
+        if (legacyRaw) {
+          return JSON.parse(legacyRaw);
+        }
+        const students = getStoredStudents(kelasId);
+        const initial = generateInitialAttendanceData(students);
+        saveAttendanceData(initial, kelasId);
+        return initial;
+      }
+      return {};
     }
     return JSON.parse(raw);
   } catch (e) {
@@ -47,19 +66,25 @@ export const getStoredAttendance = (): Record<string, DailyAttendance> => {
   }
 };
 
-export const saveAttendanceData = (data: Record<string, DailyAttendance>): void => {
+export const saveAttendanceData = (data: Record<string, DailyAttendance>, kelasId: string = 'xii_tkj_2'): void => {
   try {
-    localStorage.setItem(KEYS.ATTENDANCE, JSON.stringify(data));
+    localStorage.setItem(`${KEYS.ATTENDANCE}_${kelasId}`, JSON.stringify(data));
+    if (kelasId === 'xii_tkj_2') {
+      localStorage.setItem('smk_pgri1_presensi_attendance_v1', JSON.stringify(data));
+    }
   } catch (e) {
     console.error('Error saving attendance to storage', e);
   }
 };
 
-export const getStoredConfig = (): ClassConfig => {
+export const getStoredConfig = (kelasId: string = 'xii_tkj_2'): ClassConfig => {
   try {
-    const raw = localStorage.getItem(KEYS.CONFIG);
+    const raw = localStorage.getItem(`${KEYS.CONFIG}_${kelasId}`);
     if (!raw) {
-      saveConfig(INITIAL_CLASS_CONFIG);
+      if (kelasId === 'xii_tkj_2') {
+        const legacyRaw = localStorage.getItem('smk_pgri1_presensi_config_v1');
+        if (legacyRaw) return JSON.parse(legacyRaw);
+      }
       return INITIAL_CLASS_CONFIG;
     }
     return JSON.parse(raw);
@@ -68,9 +93,12 @@ export const getStoredConfig = (): ClassConfig => {
   }
 };
 
-export const saveConfig = (config: ClassConfig): void => {
+export const saveConfig = (config: ClassConfig, kelasId: string = 'xii_tkj_2'): void => {
   try {
-    localStorage.setItem(KEYS.CONFIG, JSON.stringify(config));
+    localStorage.setItem(`${KEYS.CONFIG}_${kelasId}`, JSON.stringify(config));
+    if (kelasId === 'xii_tkj_2') {
+      localStorage.setItem('smk_pgri1_presensi_config_v1', JSON.stringify(config));
+    }
   } catch (e) {
     console.error('Error saving config', e);
   }
@@ -115,7 +143,23 @@ export const saveFirebaseConfig = (config: FirebaseConfigState): void => {
 export const getStoredAuth = (): AuthUser | null => {
   try {
     const raw = localStorage.getItem(KEYS.AUTH);
-    if (!raw) return null;
+    if (!raw) {
+      // Periksa auth v1 lama
+      const legacyRaw = localStorage.getItem('smk_pgri1_presensi_auth_v1');
+      if (legacyRaw) {
+        const legacy = JSON.parse(legacyRaw);
+        return {
+          username: legacy.username || 'walikelas',
+          nama: legacy.nama || 'Diyanto, S.Kom.',
+          nip: '198506122010011014',
+          role: 'wali_kelas',
+          assignedKelas: 'XII TKJ 2',
+          kelasId: 'xii_tkj_2',
+          isLoggedIn: true,
+        };
+      }
+      return null;
+    }
     return JSON.parse(raw);
   } catch (e) {
     return null;
@@ -128,6 +172,7 @@ export const saveAuth = (auth: AuthUser | null): void => {
       localStorage.setItem(KEYS.AUTH, JSON.stringify(auth));
     } else {
       localStorage.removeItem(KEYS.AUTH);
+      localStorage.removeItem('smk_pgri1_presensi_auth_v1');
     }
   } catch (e) {
     console.error('Error saving auth state', e);
@@ -135,20 +180,22 @@ export const saveAuth = (auth: AuthUser | null): void => {
 };
 
 // Export full backup as JSON file
-export const exportBackupJSON = (): void => {
+export const exportBackupJSON = (kelasId: string = 'xii_tkj_2'): void => {
+  const config = getStoredConfig(kelasId);
   const backup = {
-    app: 'Sistem Presensi Digital XII TKJ 2 SMKS PGRI 1 Sukabumi',
-    version: '1.0.0',
+    app: `Sistem Presensi Digital ${config.kelas} SMKS PGRI 1 Sukabumi`,
+    version: '2.0.0 (Pendekatan B: Role-Based)',
+    kelasId,
     exportDate: new Date().toISOString(),
-    config: getStoredConfig(),
-    students: getStoredStudents(),
-    attendance: getStoredAttendance(),
+    config,
+    students: getStoredStudents(kelasId),
+    attendance: getStoredAttendance(kelasId),
   };
 
   const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backup, null, 2));
   const downloadAnchor = document.createElement('a');
   downloadAnchor.setAttribute('href', dataStr);
-  downloadAnchor.setAttribute('download', `Backup_Presensi_XII_TKJ_2_${new Date().toISOString().split('T')[0]}.json`);
+  downloadAnchor.setAttribute('download', `Backup_Presensi_${kelasId}_${new Date().toISOString().split('T')[0]}.json`);
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();

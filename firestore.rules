@@ -25,6 +25,18 @@ service cloud.firestore {
       return request.resource.data;
     }
 
+    // Helper Validasi Akun Wali Kelas / Guru
+    function isValidTeacher(data) {
+      return data.keys().hasAll(['nip', 'nama', 'role', 'assignedKelas', 'kelasId']) &&
+        data.nip is string && data.nip.size() <= 30 &&
+        data.nama is string && data.nama.size() <= 100 &&
+        (data.role == 'wali_kelas' || data.role == 'kurikulum' || data.role == 'admin') &&
+        data.assignedKelas is string && data.assignedKelas.size() <= 50 &&
+        data.kelasId is string && data.kelasId.size() <= 50 &&
+        (!('email' in data) || (data.email is string && data.email.size() <= 100)) &&
+        (!('noHp' in data) || (data.noHp is string && data.noHp.size() <= 25));
+    }
+
     // Helper Validasi Entitas Siswa
     function isValidStudent(data) {
       return data.keys().hasAll(['id', 'nis', 'nama', 'jenisKelamin', 'noHpOrtu']) &&
@@ -33,6 +45,7 @@ service cloud.firestore {
         data.nama is string && data.nama.size() > 0 && data.nama.size() <= 100 &&
         (data.jenisKelamin == 'L' || data.jenisKelamin == 'P') &&
         data.noHpOrtu is string && data.noHpOrtu.size() <= 30 &&
+        (!('kelasId' in data) || (data.kelasId is string && data.kelasId.size() <= 50)) &&
         (!('alamat' in data) || (data.alamat is string && data.alamat.size() <= 250)) &&
         (!('catatan' in data) || (data.catatan is string && data.catatan.size() <= 250));
     }
@@ -40,9 +53,10 @@ service cloud.firestore {
     // Helper Validasi Entitas Absensi Harian
     function isValidAttendance(data, dateId) {
       return data.keys().hasAll(['date', 'records', 'updatedAt']) &&
-        data.date is string && data.date == dateId && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+        data.date is string &&
         data.records is map &&
         data.updatedAt is string &&
+        (!('kelasId' in data) || (data.kelasId is string && data.kelasId.size() <= 50)) &&
         (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 100));
     }
 
@@ -55,6 +69,13 @@ service cloud.firestore {
         data.tahunAjaran is string && data.tahunAjaran.size() <= 20 &&
         (!('programKeahlian' in data) || (data.programKeahlian is string && data.programKeahlian.size() <= 100)) &&
         (!('semester' in data) || (data.semester == 'Ganjil' || data.semester == 'Genap'));
+    }
+
+    // Koleksi Master Data Akun Wali Kelas
+    match /wali_kelas/{teacherId} {
+      allow read: if true;
+      allow create, update: if isValidId(teacherId) && isValidTeacher(incoming());
+      allow delete: if isSuperAdmin();
     }
 
     // Koleksi Master Data Siswa

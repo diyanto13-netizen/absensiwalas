@@ -1,8 +1,56 @@
 {
   "entities": {
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Profil guru dan wali kelas SMKS PGRI 1 Kota Sukabumi",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID unik guru atau NIP",
+          "maxLength": 64
+        },
+        "nip": {
+          "type": "string",
+          "description": "Nomor Induk Pegawai / NUPTK",
+          "maxLength": 30
+        },
+        "nama": {
+          "type": "string",
+          "description": "Nama lengkap beserta gelar",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "description": "Alamat email guru",
+          "maxLength": 100
+        },
+        "role": {
+          "type": "string",
+          "enum": ["wali_kelas", "kurikulum", "admin"],
+          "description": "Peran pengguna dalam sistem presensi"
+        },
+        "assignedKelas": {
+          "type": "string",
+          "description": "Nama kelas yang diampu",
+          "maxLength": 50
+        },
+        "kelasId": {
+          "type": "string",
+          "description": "Slug ID rombel",
+          "maxLength": 50
+        },
+        "noHp": {
+          "type": "string",
+          "description": "Nomor WhatsApp guru",
+          "maxLength": 25
+        }
+      },
+      "required": ["nip", "nama", "role", "assignedKelas", "kelasId"]
+    },
     "Student": {
       "title": "Student",
-      "description": "Data peserta didik kelas XII TKJ 2",
+      "description": "Data peserta didik di SMKS PGRI 1 Kota Sukabumi",
       "type": "object",
       "properties": {
         "id": {
@@ -39,13 +87,18 @@
           "type": "string",
           "description": "Catatan khusus atau prestasi siswa",
           "maxLength": 250
+        },
+        "kelasId": {
+          "type": "string",
+          "description": "ID Rombel / Kelas siswa",
+          "maxLength": 50
         }
       },
       "required": ["id", "nis", "nama", "jenisKelamin", "noHpOrtu"]
     },
     "DailyAttendance": {
       "title": "DailyAttendance",
-      "description": "Catatan kehadiran harian rombel XII TKJ 2",
+      "description": "Catatan kehadiran harian peserta didik",
       "type": "object",
       "properties": {
         "date": {
@@ -65,6 +118,11 @@
           "type": "string",
           "description": "Nama pengisi absensi / wali kelas",
           "maxLength": 100
+        },
+        "kelasId": {
+          "type": "string",
+          "description": "ID Rombel / Kelas",
+          "maxLength": 50
         }
       },
       "required": ["date", "records", "updatedAt"]
@@ -119,6 +177,10 @@
     }
   },
   "firestore": {
+    "/wali_kelas/{teacherId}": {
+      "schema": "Teacher",
+      "description": "Koleksi data master akun wali kelas dan pengajar"
+    },
     "/siswa/{studentId}": {
       "schema": "Student",
       "description": "Koleksi data master peserta didik"

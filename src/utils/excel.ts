@@ -65,7 +65,7 @@ export const downloadStudentTemplateExcel = (): void => {
 /**
  * Parse File Excel (.xlsx / .xls) untuk Impor Siswa Massal
  */
-export const parseStudentsFromExcel = async (file: File): Promise<Student[]> => {
+export const parseStudentsFromExcel = async (file: File, defaultKelasId?: string): Promise<Student[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -126,6 +126,7 @@ export const parseStudentsFromExcel = async (file: File): Promise<Student[]> => 
             noHpOrtu: noHp,
             alamat: alamat || undefined,
             catatan: catatan || undefined,
+            kelasId: defaultKelasId || 'xii-tkj-2',
           });
         });
 
