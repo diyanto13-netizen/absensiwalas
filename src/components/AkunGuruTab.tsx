@@ -29,7 +29,7 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTingkat, setSelectedTingkat] = useState<'ALL' | 'X' | 'XI' | 'XII'>('ALL');
-  const [selectedJurusan, setSelectedJurusan] = useState<'ALL' | 'TKJ' | 'RPL' | 'DKV' | 'MP' | 'BD'>('ALL');
+  const [selectedJurusan, setSelectedJurusan] = useState<'ALL' | 'TKJ' | 'AKL' | 'MPLB' | 'PM'>('ALL');
 
   // Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -77,11 +77,10 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
 
       let matchJurusan = true;
       if (selectedJurusan !== 'ALL' && rombel) {
-        if (selectedJurusan === 'TKJ') matchJurusan = rombel.jurusan.includes('Jaringan');
-        else if (selectedJurusan === 'RPL') matchJurusan = rombel.jurusan.includes('Perangkat Lunak');
-        else if (selectedJurusan === 'DKV') matchJurusan = rombel.jurusan.includes('Visual');
-        else if (selectedJurusan === 'MP') matchJurusan = rombel.jurusan.includes('Perkantoran');
-        else if (selectedJurusan === 'BD') matchJurusan = rombel.jurusan.includes('Pemasaran');
+        if (selectedJurusan === 'TKJ') matchJurusan = rombel.jurusan.includes('TKJ');
+        else if (selectedJurusan === 'AKL') matchJurusan = rombel.jurusan.includes('AKL');
+        else if (selectedJurusan === 'MPLB') matchJurusan = rombel.jurusan.includes('MPLB');
+        else if (selectedJurusan === 'PM') matchJurusan = rombel.jurusan.includes('PM');
       }
 
       return matchSearch && matchTingkat && matchJurusan;
@@ -332,12 +331,11 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
             onChange={(e) => setSelectedJurusan(e.target.value as any)}
             className="px-3 py-1.5 rounded-xl glass-input text-xs text-white border border-slate-800 cursor-pointer"
           >
-            <option value="ALL" className="bg-slate-900">Semua Program Keahlian</option>
+            <option value="ALL" className="bg-slate-900">Semua Program Keahlian (4 Jurusan)</option>
             <option value="TKJ" className="bg-slate-900">TKJ (Teknik Komputer & Jaringan)</option>
-            <option value="RPL" className="bg-slate-900">RPL (Rekayasa Perangkat Lunak)</option>
-            <option value="DKV" className="bg-slate-900">DKV (Desain Komunikasi Visual)</option>
-            <option value="MP" className="bg-slate-900">MPLB (Manajemen Perkantoran)</option>
-            <option value="BD" className="bg-slate-900">PM (Bisnis Daring / Pemasaran)</option>
+            <option value="AKL" className="bg-slate-900">AKL (Akuntansi)</option>
+            <option value="MPLB" className="bg-slate-900">MPLB (Manajemen Perkantoran)</option>
+            <option value="PM" className="bg-slate-900">PM (Bisnis Daring/Pemasaran)</option>
           </select>
         </div>
 
@@ -347,7 +345,7 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
             Total Guru Terdaftar: <strong className="text-white">{teachers.length}</strong> (Ditampilkan: {filteredTeachers.length})
           </span>
           <span className="text-[11px] text-slate-500">
-            Tersedia 30 Rombel Resmi SMKS PGRI 1 Sukabumi
+            Program Keahlian: TKJ, AKL, MPLB, PM
           </span>
         </div>
       </div>
