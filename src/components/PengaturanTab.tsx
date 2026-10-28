@@ -74,35 +74,35 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-4 sm:space-y-6 pb-20 md:pb-6">
       
       {/* Title */}
-      <div className="glass-panel p-5 rounded-2xl border border-white/10 shadow-xl">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-            <Sliders className="w-6 h-6" />
+      <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
+            <Sliders className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white leading-tight">
-              Pengaturan Sistem & Konfigurasi Kelas
+            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight leading-tight">
+              Pengaturan Sistem & Rombel
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Kelola identitas kelas, kop surat resmi, sinkronisasi cloud Firebase, dan manajemen cadangan data.
+              Kelola identitas kelas, kop surat resmi, sinkronisasi Cloud Firestore, dan cadangan data.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         
         {/* Class & School Identity Form */}
-        <div className="glass-panel p-6 rounded-2xl border border-white/10 shadow-xl">
-          <h3 className="text-sm font-bold text-white mb-4 pb-2 border-b border-white/10 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-cyan-400" />
+        <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
+          <h3 className="text-sm font-bold text-white mb-3.5 pb-2 border-b border-slate-800 flex items-center gap-2">
+            <Shield className="w-4 h-4 text-indigo-400" />
             Identitas Sekolah & Wali Kelas
           </h3>
 
-          <form onSubmit={handleSaveClassConfig} className="space-y-4 text-xs sm:text-sm">
+          <form onSubmit={handleSaveClassConfig} className="space-y-3.5 text-xs sm:text-sm">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">Nama Satuan Pendidikan</label>
               <input
@@ -114,7 +114,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">Rombel / Kelas</label>
                 <input
@@ -148,7 +148,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">Nama Wali Kelas</label>
                 <input
@@ -170,7 +170,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">Nama Kepala Sekolah</label>
                 <input
@@ -204,10 +204,10 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
 
             <button
               type="submit"
-              className="w-full py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-600/25 flex items-center justify-center gap-2 transition cursor-pointer mt-2"
+              className="w-full h-11 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 flex items-center justify-center gap-2 transition cursor-pointer mt-2 touch-manipulation"
             >
               <Save className="w-4 h-4" />
-              <span>Simpan Identitas Kelas</span>
+              <span>Simpan Identitas Rombel</span>
             </button>
           </form>
         </div>
@@ -216,19 +216,19 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
         <div className="space-y-6">
           
           {/* Cloud Database (Firebase) Config */}
-          <div className="glass-panel p-6 rounded-2xl border border-white/10 shadow-xl">
-            <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-4">
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
+            <div className="flex items-center justify-between pb-2.5 border-b border-slate-800 mb-3.5">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Flame className="w-4 h-4 text-amber-400" />
-                Integrasi Cloud Database (Firebase v10)
+                Koneksi Google Firebase Cloud
               </h3>
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-500/30">
-                Lokal + Cloud Ready
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/70 text-emerald-300 border border-emerald-500/30">
+                Firestore Aktif
               </span>
             </div>
 
             <p className="text-xs text-slate-300 mb-3 leading-relaxed">
-              Aplikasi menyimpan data secara instan di penyimpanan browser (Local/Offline) dan dapat disinkronkan secara aman ke Firebase Firestore.
+              Presensi tersimpan instan di penyimpanan HP guru (offline-first) dan otomatis tersinkron ke Google Firestore.
             </p>
 
             <form onSubmit={handleSaveFirebase} className="space-y-3 text-xs">
@@ -239,7 +239,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
                   placeholder="smk-pgri1-presensi"
                   value={localFirebase.projectId}
                   onChange={(e) => setLocalFirebase({ ...localFirebase, projectId: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-lg glass-input text-white"
+                  className="w-full px-3 py-1.5 rounded-lg glass-input text-white font-mono text-xs"
                 />
               </div>
 
@@ -250,38 +250,38 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
                   placeholder="AIzaSy..."
                   value={localFirebase.apiKey}
                   onChange={(e) => setLocalFirebase({ ...localFirebase, apiKey: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-lg glass-input text-white"
+                  className="w-full px-3 py-1.5 rounded-lg glass-input text-white font-mono text-xs"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2 px-3 rounded-xl font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 flex items-center justify-center gap-2 transition cursor-pointer"
+                className="w-full h-10 rounded-xl font-semibold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 flex items-center justify-center gap-2 transition cursor-pointer touch-manipulation"
               >
-                <Server className="w-3.5 h-3.5" />
-                <span>Simpan Konfigurasi Cloud</span>
+                <Server className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Simpan Pengaturan Cloud</span>
               </button>
             </form>
           </div>
 
           {/* Backup & Restore Management */}
-          <div className="glass-panel p-6 rounded-2xl border border-white/10 shadow-xl">
-            <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
-              <Database className="w-4 h-4 text-cyan-400" />
-              Cadangan & Pemulihan Basis Data
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
+            <h3 className="text-sm font-bold text-white mb-1.5 flex items-center gap-2">
+              <Database className="w-4 h-4 text-indigo-400" />
+              Cadangan & Pemulihan Berkas JSON
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Amankan data presensi siswa secara berkala ke berkas JSON atau pulihkan data sebelumnya.
+            <p className="text-xs text-slate-400 mb-3.5">
+              Unduh salinan data presensi siswa secara berkala ke berkas JSON atau pulihkan data sebelumnya.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-2.5">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
                 onClick={exportBackupJSON}
-                className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-white/10 flex items-center justify-center gap-2 transition cursor-pointer"
+                className="flex-1 h-10 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 flex items-center justify-center gap-2 transition cursor-pointer touch-manipulation"
               >
-                <Download className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Unduh Cadangan JSON</span>
+                <Download className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Unduh JSON</span>
               </button>
 
               <input
@@ -295,22 +295,22 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
               <button
                 type="button"
                 onClick={() => restoreFileRef.current?.click()}
-                className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-white/10 flex items-center justify-center gap-2 transition cursor-pointer"
+                className="flex-1 h-10 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 flex items-center justify-center gap-2 transition cursor-pointer touch-manipulation"
               >
                 <Upload className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Pulihkan dari File</span>
+                <span>Pulihkan JSON</span>
               </button>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
-              <span className="text-[11px] text-slate-400">Kembalikan ke data awal bawaan:</span>
+            <div className="mt-3.5 pt-3.5 border-t border-slate-800 flex items-center justify-between">
+              <span className="text-[11px] text-slate-400">Kembalikan data default:</span>
               <button
                 type="button"
                 onClick={handleResetToDefault}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-rose-300 hover:text-white bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 flex items-center gap-1.5 transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg text-xs font-medium text-rose-300 hover:text-white bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/20 flex items-center gap-1 transition cursor-pointer"
               >
                 <RotateCcw className="w-3 h-3" />
-                <span>Reset Data Default</span>
+                <span>Reset Awal</span>
               </button>
             </div>
           </div>

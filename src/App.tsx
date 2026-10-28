@@ -19,6 +19,7 @@ import {
 } from './utils/firebase';
 import { Student, DailyAttendance, ClassConfig, FirebaseConfigState, AuthUser, ActiveTab } from './types';
 import { Header } from './components/Header';
+import { BottomNav } from './components/BottomNav';
 import { LoginScreen } from './components/LoginScreen';
 import { AbsensiTab } from './components/AbsensiTab';
 import { SiswaTab } from './components/SiswaTab';
@@ -246,7 +247,7 @@ export default function App() {
             onLogout={handleLogout}
           />
 
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 z-10 relative">
+          <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-6 z-10 relative">
             {activeTab === 'absensi' && (
               <AbsensiTab
                 students={students}
@@ -298,14 +299,17 @@ export default function App() {
             )}
           </main>
 
-          {/* Footer (Hidden on print) */}
-          <footer className="w-full border-t border-white/10 py-4 text-center text-xs text-slate-500 no-print z-10">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          {/* Mobile Bottom Navigation (Only visible on smartphones) */}
+          <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+
+          {/* Desktop Footer (Hidden on print & hidden on mobile) */}
+          <footer className="w-full border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 no-print z-10 hidden md:block">
+            <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
               <p>
-                Sistem Presensi Digital &copy; 2026 • <strong>SMKS PGRI 1 Kota Sukabumi</strong> • Kelas XII TKJ 2
+                Sistem Presensi Digital &copy; 2026 · <strong>SMKS PGRI 1 Kota Sukabumi</strong> · Kelas XII TKJ 2
               </p>
               <p className="text-[11px] text-slate-400">
-                Wali Kelas: <span className="text-cyan-400">{config.waliKelas}</span>
+                Wali Kelas: <span className="text-indigo-400 font-medium">{config.waliKelas}</span>
               </p>
             </div>
           </footer>

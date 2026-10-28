@@ -53,52 +53,52 @@ export const LaporanTab: React.FC<LaporanTabProps> = ({
     <div className="space-y-6 animate-in fade-in duration-300">
       
       {/* Top Action Bar (hidden when printing) */}
-      <div className="glass-panel p-5 rounded-2xl border border-white/10 shadow-xl no-print">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-lg no-print">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-cyan-400" />
+            <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <FileText className="w-5 h-5 text-indigo-400" />
               Laporan Presensi & Notifikasi WhatsApp
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Format cetak resmi standar sekolah dan pengiriman notifikasi kehadiran ke orang tua siswa.
+              Cetak format resmi sekolah dan kirimkan laporan presensi ke orang tua siswa.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Mode Selector */}
-            <div className="flex p-1 rounded-xl bg-slate-900 border border-white/10">
+            <div className="flex p-0.5 rounded-xl bg-slate-900 border border-slate-800">
               <button
                 type="button"
                 onClick={() => setReportType('harian')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                   reportType === 'harian'
-                    ? 'bg-cyan-500 text-white shadow-md'
+                    ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Laporan Harian
+                Harian
               </button>
               <button
                 type="button"
                 onClick={() => setReportType('bulanan')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                   reportType === 'bulanan'
-                    ? 'bg-cyan-500 text-white shadow-md'
+                    ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Laporan Bulanan
+                Bulanan
               </button>
             </div>
 
             {/* Print Button */}
             <button
               onClick={handlePrint}
-              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/25 flex items-center gap-2 transition cursor-pointer active:scale-95"
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 flex items-center gap-2 transition cursor-pointer active:scale-95"
             >
               <Printer className="w-4 h-4" />
-              <span>Cetak / Simpan PDF</span>
+              <span>Cetak / PDF</span>
             </button>
           </div>
         </div>

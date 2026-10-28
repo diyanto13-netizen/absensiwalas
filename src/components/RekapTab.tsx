@@ -403,26 +403,26 @@ export const RekapTab: React.FC<RekapTabProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-4 sm:space-y-6 pb-20 md:pb-6">
       
       {/* Top Filter and Actions */}
-      <div className="glass-panel p-5 rounded-2xl border border-white/10 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           
           {/* Period selector */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-0.5">
-                Pilih Periode Bulan & Tahun:
+              <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                Pilih Periode:
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                  className="px-3 py-1.5 rounded-lg glass-input text-xs sm:text-sm text-white font-medium bg-slate-900 cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg glass-input text-xs sm:text-sm text-white font-medium bg-slate-900 cursor-pointer"
                 >
                   {monthNames.map((name, index) => (
                     <option key={index + 1} value={index + 1}>
@@ -434,7 +434,7 @@ export const RekapTab: React.FC<RekapTabProps> = ({
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="px-3 py-1.5 rounded-lg glass-input text-xs sm:text-sm text-white font-medium bg-slate-900 cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg glass-input text-xs sm:text-sm text-white font-medium bg-slate-900 cursor-pointer"
                 >
                   <option value={2026}>2026</option>
                   <option value={2027}>2027</option>
@@ -447,79 +447,69 @@ export const RekapTab: React.FC<RekapTabProps> = ({
           {/* Action to download excel */}
           <button
             onClick={handleExportExcel}
-            className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25 flex items-center gap-2 transition cursor-pointer self-start sm:self-auto"
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2 transition cursor-pointer self-start sm:self-auto touch-manipulation"
           >
             <FileSpreadsheet className="w-4 h-4" />
-            <span>Unduh Rekap Excel (.xlsx)</span>
+            <span>Unduh Rekap Excel</span>
           </button>
         </div>
 
         {/* Quick Month Stat Badges */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-white/10">
-          <div className="glass-card p-3 rounded-xl border border-white/10">
-            <p className="text-xs text-slate-400">Hari Pembelajaran</p>
-            <p className="text-2xl font-bold text-white mt-1">{recordedDates.length} <span className="text-xs font-normal text-slate-400">Pertemuan</span></p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3.5 pt-3.5 border-t border-slate-800/80">
+          <div className="glass-card p-2.5 sm:p-3 rounded-xl border border-slate-800">
+            <p className="text-[11px] text-slate-400">Hari Pembelajaran</p>
+            <p className="text-xl sm:text-2xl font-bold text-white font-mono mt-0.5">{recordedDates.length} <span className="text-xs font-normal text-slate-400">Hari</span></p>
           </div>
-          <div className="glass-card p-3 rounded-xl border border-white/10">
-            <p className="text-xs text-slate-400">Rata-rata Kehadiran Bulan Ini</p>
-            <p className="text-2xl font-extrabold text-emerald-400 mt-1">{overallRate}%</p>
+          <div className="glass-card p-2.5 sm:p-3 rounded-xl border border-slate-800">
+            <p className="text-[11px] text-slate-400">Rata-rata Bulan Ini</p>
+            <p className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono mt-0.5">{overallRate}%</p>
           </div>
-          <div className="glass-card p-3 rounded-xl border border-white/10">
-            <p className="text-xs text-slate-400">Total Akumulasi Sakit</p>
-            <p className="text-2xl font-bold text-amber-400 mt-1">{totalSakitMonth} <span className="text-xs font-normal text-slate-400">kejadian</span></p>
+          <div className="glass-card p-2.5 sm:p-3 rounded-xl border border-slate-800">
+            <p className="text-[11px] text-slate-400">Akumulasi Sakit</p>
+            <p className="text-xl sm:text-2xl font-bold text-amber-400 font-mono mt-0.5">{totalSakitMonth} <span className="text-xs font-normal text-slate-400">kali</span></p>
           </div>
-          <div className="glass-card p-3 rounded-xl border border-white/10">
-            <p className="text-xs text-slate-400">Total Alpa (Tanpa Ket.)</p>
-            <p className="text-2xl font-bold text-rose-400 mt-1">{totalAlpaMonth} <span className="text-xs font-normal text-slate-400">kejadian</span></p>
+          <div className="glass-card p-2.5 sm:p-3 rounded-xl border border-slate-800">
+            <p className="text-[11px] text-slate-400">Total Alpa</p>
+            <p className="text-xl sm:text-2xl font-bold text-rose-400 font-mono mt-0.5">{totalAlpaMonth} <span className="text-xs font-normal text-slate-400">kali</span></p>
           </div>
         </div>
       </div>
 
       {/* LINE CHART: Tren Persentase Kehadiran 6 Bulan Terakhir */}
-      <div className="glass-panel p-6 rounded-2xl border border-cyan-500/30 shadow-2xl relative overflow-hidden">
-        {/* Glow ambient accent */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+      <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                <Activity className="w-5 h-5" />
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <h3 className="text-base font-bold text-white tracking-tight">
-                Tren Persentase Kehadiran Kelas (6 Bulan Terakhir)
+              <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                Tren Kehadiran Kelas (6 Bulan Terakhir)
               </h3>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Pemantauan fluktuasi kedisiplinan belajar rombel XII TKJ 2 dan perbandingan terhadap batas kelulusan minimal (85%).
+              Pemantauan fluktuasi kedisiplinan belajar rombel XII TKJ 2 terhadap batas kelulusan minimal (85%).
             </p>
           </div>
 
           {/* Quick Metrics Badges for 6 Months */}
-          <div className="flex flex-wrap items-center gap-2.5 text-xs">
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-white/10 flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <div className="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5">
               <span className="text-slate-400">Rata-rata 6 Bulan:</span>
-              <span className="font-extrabold text-cyan-300">{sixMonthAverage}%</span>
+              <span className="font-bold text-indigo-300 font-mono">{sixMonthAverage}%</span>
             </div>
 
             {maxRateMonth && (
-              <div className="px-3 py-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center gap-1.5 text-emerald-300">
+              <div className="px-2.5 py-1 rounded-xl bg-emerald-950/50 border border-emerald-500/30 flex items-center gap-1 text-emerald-300">
                 <Award className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Puncak: <strong>{maxRateMonth.label}</strong> ({maxRateMonth.rate}%)</span>
-              </div>
-            )}
-
-            {minRateMonth && minRateMonth.rate < 85 && (
-              <div className="px-3 py-1.5 rounded-xl bg-rose-950/60 border border-rose-500/30 flex items-center gap-1.5 text-rose-300">
-                <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-                <span>Titik Rendah: {minRateMonth.label} ({minRateMonth.rate}%)</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Canvas Line Chart */}
-        <div className="relative w-full h-72 sm:h-80 z-10">
+        <div className="relative w-full h-64 sm:h-72 z-10">
           <canvas ref={lineChartRef}></canvas>
         </div>
 
@@ -543,29 +533,29 @@ export const RekapTab: React.FC<RekapTabProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Pie / Doughnut Chart Card */}
-        <div className="lg:col-span-5 glass-panel p-5 rounded-2xl border border-white/10 shadow-xl flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-cyan-400" />
+        <div className="lg:col-span-5 glass-panel p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col">
+          <div className="flex items-center justify-between mb-3.5">
+            <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+              <PieChart className="w-4 h-4 text-indigo-400" />
               Distribusi Status Kehadiran
             </h3>
             <span className="text-[11px] text-slate-400">{monthNames[selectedMonth - 1]} {selectedYear}</span>
           </div>
-          <div className="relative flex-1 min-h-[260px] flex items-center justify-center">
+          <div className="relative flex-1 min-h-[220px] sm:min-h-[260px] flex items-center justify-center">
             <canvas ref={pieChartRef}></canvas>
           </div>
         </div>
 
         {/* Bar Chart Card */}
-        <div className="lg:col-span-7 glass-panel p-5 rounded-2xl border border-white/10 shadow-xl flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+        <div className="lg:col-span-7 glass-panel p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col">
+          <div className="flex items-center justify-between mb-3.5">
+            <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-emerald-400" />
-              Tren Kehadiran Harian / Mingguan
+              Tren Kehadiran Harian
             </h3>
-            <span className="text-[11px] text-slate-400">Per Hari Efektif ({monthNames[selectedMonth - 1]})</span>
+            <span className="text-[11px] text-slate-400">Hari Efektif ({monthNames[selectedMonth - 1]})</span>
           </div>
-          <div className="relative flex-1 min-h-[260px]">
+          <div className="relative flex-1 min-h-[220px] sm:min-h-[260px]">
             <canvas ref={barChartRef}></canvas>
           </div>
         </div>
@@ -573,18 +563,18 @@ export const RekapTab: React.FC<RekapTabProps> = ({
       </div>
 
       {/* Matrix Table: Rekap Siswa Per Siswa */}
-      <div className="glass-panel rounded-2xl border border-white/10 shadow-xl overflow-hidden">
-        <div className="p-4 bg-slate-900/60 border-b border-white/10 flex items-center justify-between">
+      <div className="glass-panel rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+        <div className="p-3.5 sm:p-4 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold text-white">
+            <h3 className="text-xs sm:text-sm font-bold text-white">
               Tabel Matriks Presensi Siswa ({monthNames[selectedMonth - 1]} {selectedYear})
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Pantau akumulasi kehadiran dan langsung kirimkan rekap ke orang tua siswa.
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+              Akumulasi kehadiran dan tautan cepat pengiriman rekap ke WhatsApp orang tua.
             </p>
           </div>
-          <span className="text-xs text-cyan-300 font-medium hidden sm:inline">
-            Standar Ketuntasan: Minimal 85%
+          <span className="text-xs text-indigo-300 font-medium hidden sm:inline">
+            Standar Minimal: 85%
           </span>
         </div>
 

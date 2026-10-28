@@ -2,67 +2,77 @@
 
 @layer base {
   :root {
-    --glass-bg: rgba(15, 23, 42, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.12);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --bg-canvas: #090d16;
+    --surface-card: #111827;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    background-color: #090d16;
+    color: #f1f5f9;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 }
 
-/* Glassmorphism Styles */
+/* Premium Refined Glassmorphism */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-}
-
-.glass-card {
-  background: rgba(30, 41, 59, 0.55);
+  background: rgba(17, 24, 39, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.glass-input {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #f8fafc;
+.glass-card {
+  background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-input {
+  background: rgba(11, 15, 25, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  transition: all 0.2s ease;
 }
 
 .glass-input:focus {
-  border-color: #06b6d4;
+  border-color: #6366f1;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.25);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
-/* Glowing backgrounds */
-.glow-cyan {
-  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
+/* Touch targets and mobile optimization */
+.touch-manipulation {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.glow-emerald {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4);
+/* Mobile Safe Area Inset */
+.safe-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: rgba(148, 163, 184, 0.25);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.6);
+  background: rgba(148, 163, 184, 0.4);
 }
 
 /* Print CSS Optimization */
@@ -70,13 +80,14 @@
   body {
     background: #ffffff !important;
     color: #000000 !important;
-    font-size: 11pt;
+    font-size: 10.5pt;
   }
 
   .no-print,
   #loginScreen,
   nav,
   header,
+  footer,
   .print-hide {
     display: none !important;
   }
@@ -110,7 +121,7 @@
   }
 
   @page {
-    margin: 1.5cm;
+    margin: 1.2cm;
     size: A4 portrait;
   }
 }
