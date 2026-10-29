@@ -275,7 +275,7 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
                 <span className="text-slate-600">·</span>
                 <span className="text-indigo-300 font-mono">{superAdminConfig.email}</span>
                 <span className="text-slate-600">·</span>
-                <span className="text-emerald-400">Akses Penuh Seluruh 30 Rombel</span>
+                <span className="text-emerald-400 font-semibold">Akses Penuh Seluruh {ALL_SMK_PGRI_1_ROMBELS.length} Rombel (21 Kelas)</span>
               </p>
             </div>
           </div>
@@ -290,6 +290,75 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
             <Edit3 className="w-3.5 h-3.5 text-amber-400" />
             <span>Kelola Super Admin</span>
           </button>
+        </div>
+      </div>
+
+      {/* Rombel Structure Overview (21 Rombel Resmi) */}
+      <div className="glass-panel p-4 rounded-2xl border border-slate-800 bg-slate-900/40">
+        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-800/80">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-indigo-400" />
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              Struktur Program Keahlian & Rombel (21 Rombel SMKS PGRI 1)
+            </h3>
+          </div>
+          <span className="text-[11px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
+            {occupiedClasses.size} / {ALL_SMK_PGRI_1_ROMBELS.length} Rombel Terisi
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+          {/* TKJ */}
+          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/90">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-bold text-indigo-300">1. TKJ (6 Rombel)</span>
+              <span className="text-[10px] text-slate-400">Teknik Komputer</span>
+            </div>
+            <div className="space-y-1 text-[11px] text-slate-300">
+              <p><strong className="text-slate-400">X:</strong> X TKJ 1, X TKJ 2</p>
+              <p><strong className="text-slate-400">XI:</strong> XI TKJ 1, XI TKJ 2</p>
+              <p><strong className="text-slate-400">XII:</strong> XII TKJ 1, XII TKJ 2</p>
+            </div>
+          </div>
+
+          {/* AKL */}
+          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/90">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-bold text-emerald-300">2. AKL (3 Rombel)</span>
+              <span className="text-[10px] text-slate-400">Akuntansi</span>
+            </div>
+            <div className="space-y-1 text-[11px] text-slate-300">
+              <p><strong className="text-slate-400">X:</strong> X AKL</p>
+              <p><strong className="text-slate-400">XI:</strong> XI AKL</p>
+              <p><strong className="text-slate-400">XII:</strong> XII AKL</p>
+            </div>
+          </div>
+
+          {/* MPLB */}
+          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/90">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-bold text-sky-300">3. MPLB (6 Rombel)</span>
+              <span className="text-[10px] text-slate-400">Perkantoran</span>
+            </div>
+            <div className="space-y-1 text-[11px] text-slate-300">
+              <p><strong className="text-slate-400">X:</strong> X MPLB 1, X MPLB 2</p>
+              <p><strong className="text-slate-400">XI:</strong> XI MPLB 1, XI MPLB 2</p>
+              <p><strong className="text-slate-400">XII:</strong> XII MPLB 1, XII MPLB 2</p>
+            </div>
+          </div>
+
+          {/* PM */}
+          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/90">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-bold text-amber-300">4. PM (6 Rombel)</span>
+              <span className="text-[10px] text-slate-400">Bisnis/Pemasaran</span>
+            </div>
+            <div className="space-y-1 text-[11px] text-slate-300">
+              <p><strong className="text-slate-400">X:</strong> X PM 1, X PM 2</p>
+              <p><strong className="text-slate-400">XI:</strong> XI PM 1, XI PM 2</p>
+              <p><strong className="text-slate-400">XII:</strong> XII PM 1, XII PM 2</p>
+            </div>
+          </div>
         </div>
       </div>
 

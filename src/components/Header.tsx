@@ -115,30 +115,42 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
 
                     {showClassDropdown && (
-                      <div className="absolute left-0 mt-1.5 w-52 rounded-xl glass-panel border border-slate-700 shadow-2xl py-1.5 z-50 animate-in fade-in">
-                        <div className="px-3 py-1 border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                          Pilih Rombel (Super Admin)
+                      <div className="absolute left-0 mt-1.5 w-64 max-h-80 overflow-y-auto rounded-xl glass-panel border border-slate-700 shadow-2xl py-1.5 z-50 animate-in fade-in custom-scrollbar">
+                        <div className="sticky top-0 bg-slate-950/95 backdrop-blur px-3 py-1.5 border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                          <span>Pilih Rombel ({DEFAULT_ROMBELS.length} Rombel)</span>
+                          <span className="text-[9px] text-indigo-400">SMKS PGRI 1</span>
                         </div>
-                        {DEFAULT_ROMBELS.map((rombel) => {
-                          const isAct = rombel.id === activeKelasId;
+
+                        {(['X', 'XI', 'XII'] as const).map((tingkat) => {
+                          const rombelsInTingkat = DEFAULT_ROMBELS.filter((r) => r.tingkat === tingkat);
                           return (
-                            <button
-                              key={rombel.id}
-                              type="button"
-                              onClick={() => {
-                                if (onChangeKelas) onChangeKelas(rombel.id);
-                                setShowClassDropdown(false);
-                              }}
-                              className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between transition cursor-pointer ${
-                                isAct ? 'bg-indigo-600/30 text-white font-bold' : 'text-slate-300 hover:bg-slate-800/80'
-                              }`}
-                            >
-                              <div>
-                                <p className="font-semibold">{rombel.nama}</p>
-                                <p className="text-[10px] text-slate-400">{rombel.jurusan}</p>
+                            <div key={tingkat} className="py-1">
+                              <div className="px-3 py-1 text-[10px] font-bold text-indigo-300/80 bg-slate-900/60 uppercase tracking-wider">
+                                Kelas {tingkat} ({rombelsInTingkat.length} Rombel)
                               </div>
-                              {isAct && <Check className="w-3.5 h-3.5 text-indigo-400" />}
-                            </button>
+                              {rombelsInTingkat.map((rombel) => {
+                                const isAct = rombel.id === activeKelasId;
+                                return (
+                                  <button
+                                    key={rombel.id}
+                                    type="button"
+                                    onClick={() => {
+                                      if (onChangeKelas) onChangeKelas(rombel.id);
+                                      setShowClassDropdown(false);
+                                    }}
+                                    className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between transition cursor-pointer ${
+                                      isAct ? 'bg-indigo-600/30 text-white font-bold' : 'text-slate-300 hover:bg-slate-800/80'
+                                    }`}
+                                  >
+                                    <div>
+                                      <p className="font-semibold text-xs">{rombel.nama}</p>
+                                      <p className="text-[10px] text-slate-400">{rombel.jurusan}</p>
+                                    </div>
+                                    {isAct && <Check className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           );
                         })}
                       </div>

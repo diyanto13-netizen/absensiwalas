@@ -11,39 +11,41 @@ export const DEFAULT_SUPER_ADMIN: SuperAdminConfig = {
 };
 
 // 4 Program Keahlian Resmi SMKS PGRI 1 Kota Sukabumi:
-// 1. TKJ (Teknik Komputer & Jaringan)
-// 2. AKL (Akuntansi)
-// 3. MPLB (Manajemen Perkantoran)
-// 4. PM (Bisnis Daring/Pemasaran)
+// 1. TKJ (Teknik Komputer & Jaringan): X TKJ 1-2, XI TKJ 1-2, XII TKJ 1-2
+// 2. AKL (Akuntansi): X AKL, XI AKL, XII AKL (1 rombel per tingkat)
+// 3. MPLB (Manajemen Perkantoran): X MPLB 1-2, XI MPLB 1-2, XII MPLB 1-2
+// 4. PM (Bisnis Daring/Pemasaran): X PM 1-2, XI PM 1-2, XII PM 1-2
+// Total: 21 Rombel Resmi
+export const PROGRAM_KEAHLIAN_RESMI = [
+  { kode: 'TKJ', nama: 'Teknik Komputer & Jaringan', rombelsPerTingkat: 2, totalRombel: 6 },
+  { kode: 'AKL', nama: 'Akuntansi', rombelsPerTingkat: 1, totalRombel: 3 },
+  { kode: 'MPLB', nama: 'Manajemen Perkantoran', rombelsPerTingkat: 2, totalRombel: 6 },
+  { kode: 'PM', nama: 'Bisnis Daring/Pemasaran', rombelsPerTingkat: 2, totalRombel: 6 },
+] as const;
+
 export const ALL_SMK_PGRI_1_ROMBELS: RombelInfo[] = [
-  // --- TINGKAT KELAS X ---
+  // --- TINGKAT KELAS X (7 Rombel) ---
   { id: 'x_tkj_1', nama: 'X TKJ 1', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'X' },
   { id: 'x_tkj_2', nama: 'X TKJ 2', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'X' },
-  { id: 'x_tkj_3', nama: 'X TKJ 3', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'X' },
-  { id: 'x_akl_1', nama: 'X AKL 1', jurusan: 'AKL (Akuntansi)', tingkat: 'X' },
-  { id: 'x_akl_2', nama: 'X AKL 2', jurusan: 'AKL (Akuntansi)', tingkat: 'X' },
+  { id: 'x_akl', nama: 'X AKL', jurusan: 'AKL (Akuntansi)', tingkat: 'X' },
   { id: 'x_mplb_1', nama: 'X MPLB 1', jurusan: 'MPLB (Manajemen Perkantoran)', tingkat: 'X' },
   { id: 'x_mplb_2', nama: 'X MPLB 2', jurusan: 'MPLB (Manajemen Perkantoran)', tingkat: 'X' },
   { id: 'x_pm_1', nama: 'X PM 1', jurusan: 'PM (Bisnis Daring/Pemasaran)', tingkat: 'X' },
   { id: 'x_pm_2', nama: 'X PM 2', jurusan: 'PM (Bisnis Daring/Pemasaran)', tingkat: 'X' },
 
-  // --- TINGKAT KELAS XI ---
-  { id: 'xi_tkj_1', nama: 'XI TKJ 1', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'XI' },
+  // --- TINGKAT KELAS XI (7 Rombel) ---
+  { id: 'xi_tkj_1', nama: 'XI TKJ 1', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'XI', waliKelasNama: 'Hendra Wijaya, S.T.', waliKelasNip: '19790405 200604 1 008' },
   { id: 'xi_tkj_2', nama: 'XI TKJ 2', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'XI' },
-  { id: 'xi_tkj_3', nama: 'XI TKJ 3', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'XI' },
-  { id: 'xi_akl_1', nama: 'XI AKL 1', jurusan: 'AKL (Akuntansi)', tingkat: 'XI', waliKelasNama: 'Siti Rahmawati, S.E., M.Ak.', waliKelasNip: '19920110 201903 2 014' },
-  { id: 'xi_akl_2', nama: 'XI AKL 2', jurusan: 'AKL (Akuntansi)', tingkat: 'XI' },
+  { id: 'xi_akl', nama: 'XI AKL', jurusan: 'AKL (Akuntansi)', tingkat: 'XI', waliKelasNama: 'Siti Rahmawati, S.E., M.Ak.', waliKelasNip: '19920110 201903 2 014' },
   { id: 'xi_mplb_1', nama: 'XI MPLB 1', jurusan: 'MPLB (Manajemen Perkantoran)', tingkat: 'XI' },
   { id: 'xi_mplb_2', nama: 'XI MPLB 2', jurusan: 'MPLB (Manajemen Perkantoran)', tingkat: 'XI' },
   { id: 'xi_pm_1', nama: 'XI PM 1', jurusan: 'PM (Bisnis Daring/Pemasaran)', tingkat: 'XI', waliKelasNama: 'Rina Agustina, S.Pd.', waliKelasNip: '19900824 201602 2 007' },
   { id: 'xi_pm_2', nama: 'XI PM 2', jurusan: 'PM (Bisnis Daring/Pemasaran)', tingkat: 'XI' },
 
-  // --- TINGKAT KELAS XII ---
+  // --- TINGKAT KELAS XII (7 Rombel) ---
   { id: 'xii_tkj_1', nama: 'XII TKJ 1', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'XII', waliKelasNama: 'Ahmad Fauzi, S.Kom.', waliKelasNip: '19880315 201502 1 003' },
   { id: 'xii_tkj_2', nama: 'XII TKJ 2', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'XII', waliKelasNama: 'Diyanto, S.Kom.', waliKelasNip: '19850612 201001 1 014' },
-  { id: 'xii_tkj_3', nama: 'XII TKJ 3', jurusan: 'TKJ (Teknik Komputer & Jaringan)', tingkat: 'XII', waliKelasNama: 'Hendra Wijaya, S.T.', waliKelasNip: '19790405 200604 1 008' },
-  { id: 'xii_akl_1', nama: 'XII AKL 1', jurusan: 'AKL (Akuntansi)', tingkat: 'XII' },
-  { id: 'xii_akl_2', nama: 'XII AKL 2', jurusan: 'AKL (Akuntansi)', tingkat: 'XII' },
+  { id: 'xii_akl', nama: 'XII AKL', jurusan: 'AKL (Akuntansi)', tingkat: 'XII' },
   { id: 'xii_mplb_1', nama: 'XII MPLB 1', jurusan: 'MPLB (Manajemen Perkantoran)', tingkat: 'XII', waliKelasNama: 'Dra. Hj. Nurlaela, M.M.', waliKelasNip: '19710318 199602 2 001' },
   { id: 'xii_mplb_2', nama: 'XII MPLB 2', jurusan: 'MPLB (Manajemen Perkantoran)', tingkat: 'XII' },
   { id: 'xii_pm_1', nama: 'XII PM 1', jurusan: 'PM (Bisnis Daring/Pemasaran)', tingkat: 'XII' },
@@ -76,24 +78,24 @@ export const DEFAULT_TEACHERS: TeacherProfile[] = [
     password: 'smkpgri1',
   },
   {
-    id: 'teacher-xi-akl-1',
+    id: 'teacher-xi-akl',
     nip: '199201102019032014',
     nama: 'Siti Rahmawati, S.E., M.Ak.',
     email: 'siti.rahma@smkpgri1sukabumi.sch.id',
     role: 'wali_kelas',
-    assignedKelas: 'XI AKL 1',
-    kelasId: 'xi_akl_1',
+    assignedKelas: 'XI AKL',
+    kelasId: 'xi_akl',
     noHp: '082112345679',
     password: 'smkpgri1',
   },
   {
-    id: 'teacher-xii-tkj-3',
+    id: 'teacher-xi-tkj-1',
     nip: '197904052006041008',
     nama: 'Hendra Wijaya, S.T.',
     email: 'hendra.wijaya@smkpgri1sukabumi.sch.id',
     role: 'wali_kelas',
-    assignedKelas: 'XII TKJ 3',
-    kelasId: 'xii_tkj_3',
+    assignedKelas: 'XI TKJ 1',
+    kelasId: 'xi_tkj_1',
     noHp: '087812345670',
     password: 'smkpgri1',
   },
