@@ -23,8 +23,9 @@ import {
 } from './utils/firebase';
 import { 
   Student, DailyAttendance, ClassConfig, FirebaseConfigState, 
-  AuthUser, ActiveTab, TeacherProfile, SuperAdminConfig 
+  AuthUser, ActiveTab, TeacherProfile, SuperAdminConfig, ThemeMode 
 } from './types';
+import { getStoredTheme, applyTheme } from './utils/theme';
 import { DEFAULT_ROMBELS, DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN, ALL_SMK_PGRI_1_ROMBELS } from './data/initialData';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
@@ -66,6 +67,21 @@ export default function App() {
   // State Manajemen Akun Wali Kelas & Super Admin
   const [teachers, setTeachers] = useState<TeacherProfile[]>(DEFAULT_TEACHERS);
   const [superAdminConfig, setSuperAdminConfig] = useState<SuperAdminConfig>(DEFAULT_SUPER_ADMIN);
+
+  // State Tema (Mode Gelap & Mode Terang)
+  const [theme, setTheme] = useState<ThemeMode>(() => getStoredTheme());
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  const handleToggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next: ThemeMode = prev === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      return next;
+    });
+  }, []);
 
   // State Sistem Notifikasi Toast
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -494,6 +510,8 @@ export default function App() {
         <LoginScreen
           onLoginSuccess={handleLoginSuccess}
           showToast={showToast}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
         />
       )}
 
@@ -512,6 +530,8 @@ export default function App() {
             onLogout={handleLogout}
             activeKelasId={activeKelasId}
             onChangeKelas={handleChangeKelas}
+            theme={theme}
+            onToggleTheme={handleToggleTheme}
           />
 
           <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-6 z-10 relative">
@@ -578,6 +598,8 @@ export default function App() {
                 showToast={showToast}
                 onOpenAkunTab={() => setActiveTab('akun')}
                 isAdmin={user.role === 'admin'}
+                theme={theme}
+                onToggleTheme={handleToggleTheme}
               />
             )}
           </main>

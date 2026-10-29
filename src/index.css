@@ -13,15 +13,17 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
-/* Premium Refined Glassmorphism */
+/* Premium Refined Glassmorphism - Dark Mode (Default) */
 .glass-panel {
   background: rgba(17, 24, 39, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .glass-card {
@@ -29,6 +31,7 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .glass-input {
@@ -42,6 +45,193 @@
   border-color: #6366f1;
   outline: none;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* ========================================================
+   LIGHT MODE STYLING & ADAPTATION
+   ======================================================== */
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Base Light Mode Background */
+html.light #root > div {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Light Mode Glass Panels */
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.04) !important;
+}
+
+html.light .glass-input {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.light .glass-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.light .glass-input:focus {
+  border-color: #4f46e5 !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15) !important;
+}
+
+/* Light Mode Header & BottomNav Surfaces */
+html.light header {
+  background-color: rgba(255, 255, 255, 0.94) !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light nav {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light footer {
+  border-color: #e2e8f0 !important;
+  background-color: #ffffff !important;
+}
+
+/* Light Mode Card & Container Adaptations */
+html.light .bg-slate-950,
+html.light .bg-slate-950\/90,
+html.light .bg-slate-950\/95 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.light .bg-slate-900,
+html.light .bg-slate-900\/80,
+html.light .bg-slate-900\/70,
+html.light .bg-slate-900\/60,
+html.light .bg-slate-900\/40 {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .border-slate-800,
+html.light .border-slate-800\/80,
+html.light .border-slate-800\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .border-slate-700 {
+  border-color: #cbd5e1 !important;
+}
+
+html.light .hover\:bg-slate-800:hover,
+html.light .hover\:bg-slate-800\/80:hover,
+html.light .hover\:bg-slate-900:hover,
+html.light .hover\:bg-slate-900\/70:hover {
+  background-color: #e2e8f0 !important;
+}
+
+/* Light Mode Typography Adjustments */
+html.light h1:not(.keep-white),
+html.light h2:not(.keep-white),
+html.light h3:not(.keep-white),
+html.light h4:not(.keep-white) {
+  color: #0f172a !important;
+}
+
+html.light .text-white:not([class*="bg-indigo-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-amber-"]):not([class*="bg-cyan-"]):not(.keep-white) {
+  color: #0f172a !important;
+}
+
+html.light .text-slate-100 {
+  color: #0f172a !important;
+}
+
+html.light .text-slate-200 {
+  color: #1e293b !important;
+}
+
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-400 {
+  color: #64748b !important;
+}
+
+html.light .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Light Mode Badges & Special Containers */
+html.light .bg-emerald-950\/40,
+html.light .bg-emerald-950\/70 {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #065f46 !important;
+}
+
+html.light .bg-amber-950\/20,
+html.light .bg-amber-950\/40 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+
+html.light .bg-rose-950\/40,
+html.light .bg-rose-950\/50,
+html.light .bg-rose-950\/60 {
+  background-color: #fff1f2 !important;
+  border-color: #fecdd3 !important;
+  color: #9f1239 !important;
+}
+
+html.light .bg-indigo-950\/40,
+html.light .bg-indigo-950\/60 {
+  background-color: #eef2ff !important;
+  border-color: #c7d2fe !important;
+}
+
+/* Light Mode Table Rows */
+html.light table thead tr th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light table tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Light Mode Decorative Ambient Background Softening */
+html.light .fixed.inset-0 .bg-cyan-600\/10 {
+  background-color: rgba(6, 182, 212, 0.05) !important;
+}
+html.light .fixed.inset-0 .bg-blue-600\/10 {
+  background-color: rgba(59, 130, 246, 0.04) !important;
+}
+html.light .fixed.inset-0 .bg-indigo-600\/10 {
+  background-color: rgba(99, 102, 241, 0.04) !important;
+}
+
+/* Preserve White text on active colored buttons */
+html.light .bg-indigo-600,
+html.light .bg-indigo-600 span,
+html.light .bg-indigo-600 i,
+html.light .bg-emerald-600,
+html.light .bg-rose-600 {
+  color: #ffffff !important;
 }
 
 /* Touch targets and mobile optimization */

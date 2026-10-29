@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { LogIn, ShieldCheck, Lock, User, School, BadgeCheck, Users, ChevronRight, KeyRound } from 'lucide-react';
-import { AuthUser, TeacherProfile, SuperAdminConfig } from '../types';
+import { LogIn, ShieldCheck, Lock, User, School, BadgeCheck, Users, ChevronRight, KeyRound, Sun, Moon } from 'lucide-react';
+import { AuthUser, TeacherProfile, SuperAdminConfig, ThemeMode } from '../types';
 import { DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN } from '../data/initialData';
 import { findTeacherByNipOrIdentifier, subscribeToTeachers, subscribeToSuperAdminConfig } from '../utils/firebase';
 
 interface LoginScreenProps {
   onLoginSuccess: (user: AuthUser) => void;
   showToast: (title: string, message?: string, type?: 'success' | 'error' | 'info') => void;
+  theme?: ThemeMode;
+  onToggleTheme?: () => void;
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ 
+  onLoginSuccess, 
+  showToast,
+  theme = 'dark',
+  onToggleTheme,
+}) => {
   const [identifier, setIdentifier] = useState('198506122010011014');
   const [password, setPassword] = useState('smkpgri1');
   const [isLoading, setIsLoading] = useState(false);
@@ -165,6 +172,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showTo
     >
       <div className="relative w-full max-w-lg p-5 sm:p-7 rounded-2xl glass-panel border border-slate-800 shadow-2xl my-auto">
         
+        {/* Theme Toggle Button on Login Screen */}
+        {onToggleTheme && (
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="absolute top-4 right-4 p-2 rounded-xl bg-slate-900/60 hover:bg-slate-800 text-slate-300 border border-slate-800 transition cursor-pointer touch-manipulation z-10"
+            title={theme === 'dark' ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}
+            aria-label="Toggle Theme"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-500" />
+            )}
+          </button>
+        )}
+
         {/* School Header */}
         <div className="text-center mb-5 relative">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-slate-800 text-white shadow-md border border-indigo-500/20 mb-2.5">

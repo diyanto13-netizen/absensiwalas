@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { School, Clock, LogOut, Activity, Cloud, RefreshCw, Shield, Layers, Check, ChevronDown } from 'lucide-react';
-import { ClassConfig, AuthUser, ActiveTab } from '../types';
+import { School, Clock, LogOut, Activity, Cloud, RefreshCw, Shield, Layers, Check, ChevronDown, Sun, Moon } from 'lucide-react';
+import { ClassConfig, AuthUser, ActiveTab, ThemeMode } from '../types';
 import { DEFAULT_ROMBELS } from '../data/initialData';
 
 interface HeaderProps {
@@ -22,6 +22,8 @@ interface HeaderProps {
   onLogout: () => void;
   activeKelasId: string;
   onChangeKelas?: (newKelasId: string) => void;
+  theme: ThemeMode;
+  onToggleTheme: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -36,6 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   activeKelasId,
   onChangeKelas,
+  theme,
+  onToggleTheme,
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentDate, setCurrentDate] = useState<string>('');
@@ -202,6 +206,24 @@ export const Header: React.FC<HeaderProps> = ({
                 {isSyncing ? 'Sinkronisasi...' : 'Cloud Aktif'}
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            </button>
+
+            {/* Dark Mode & Light Mode Toggle */}
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs transition border cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border-slate-800 text-slate-300 touch-manipulation"
+              title={theme === 'dark' ? 'Beralih ke Mode Terang (Light Mode)' : 'Beralih ke Mode Gelap (Dark Mode)'}
+              aria-label="Toggle Theme Mode"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-3.5 h-3.5 text-amber-400 transition-transform duration-300 hover:rotate-45" />
+              ) : (
+                <Moon className="w-3.5 h-3.5 text-indigo-500 transition-transform duration-300 -rotate-12" />
+              )}
+              <span className="hidden sm:inline text-[11px] font-medium">
+                {theme === 'dark' ? 'Terang' : 'Gelap'}
+              </span>
             </button>
 
             {/* Teacher Profile & Logout */}

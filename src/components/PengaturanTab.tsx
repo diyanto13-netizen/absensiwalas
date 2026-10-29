@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { 
   Sliders, Save, Database, Download, Upload, 
-  RotateCcw, Shield, CheckCircle2, Server, Flame, Sparkles 
+  RotateCcw, Shield, CheckCircle2, Server, Flame, Sparkles,
+  Sun, Moon
 } from 'lucide-react';
-import { ClassConfig, FirebaseConfigState, Student, DailyAttendance } from '../types';
+import { ClassConfig, FirebaseConfigState, Student, DailyAttendance, ThemeMode } from '../types';
 import { exportBackupJSON } from '../utils/storage';
 import { INITIAL_STUDENTS, INITIAL_CLASS_CONFIG, generateInitialAttendanceData } from '../data/initialData';
 
@@ -16,6 +17,8 @@ interface PengaturanTabProps {
   showToast: (title: string, message?: string, type?: 'success' | 'error' | 'info') => void;
   onOpenAkunTab?: () => void;
   isAdmin?: boolean;
+  theme?: ThemeMode;
+  onToggleTheme?: () => void;
 }
 
 export const PengaturanTab: React.FC<PengaturanTabProps> = ({
@@ -27,6 +30,8 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
   showToast,
   onOpenAkunTab,
   isAdmin = false,
+  theme = 'dark',
+  onToggleTheme,
 }) => {
   const [localConfig, setLocalConfig] = useState<ClassConfig>(config);
   const [localFirebase, setLocalFirebase] = useState<FirebaseConfigState>(firebaseConfig);
@@ -229,9 +234,68 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
           </form>
         </div>
 
-        {/* Right Column: Cloud Firebase & Backup/Restore */}
+        {/* Right Column: Theme, Cloud Firebase & Backup/Restore */}
         <div className="space-y-6">
           
+          {/* Theme Mode Selector Card */}
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
+            <div className="flex items-center justify-between pb-2.5 border-b border-slate-800 mb-3.5">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                {theme === 'dark' ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
+                Tema Tampilan Sistem
+              </h3>
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
+                {theme === 'dark' ? 'Mode Gelap Aktif' : 'Mode Terang Aktif'}
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-300 mb-3.5 leading-relaxed">
+              Pilih mode tampilan sesuai kenyamanan Anda saat mengelola data siswa di dalam ruangan maupun di luar ruangan.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  if (theme !== 'dark' && onToggleTheme) onToggleTheme();
+                }}
+                className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition cursor-pointer touch-manipulation ${
+                  theme === 'dark'
+                    ? 'bg-indigo-950/70 border-indigo-500 text-white shadow-sm ring-1 ring-indigo-500/50'
+                    : 'bg-slate-900/50 hover:bg-slate-800 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-indigo-400">
+                  <Moon className="w-4 h-4" />
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-bold">Mode Gelap</p>
+                  <p className="text-[10px] text-slate-400">Dark Glassmorphism</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (theme !== 'light' && onToggleTheme) onToggleTheme();
+                }}
+                className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition cursor-pointer touch-manipulation ${
+                  theme === 'light'
+                    ? 'bg-amber-500/15 border-amber-500 text-white shadow-sm ring-1 ring-amber-500/50'
+                    : 'bg-slate-900/50 hover:bg-slate-800 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-center text-amber-500">
+                  <Sun className="w-4 h-4" />
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-bold text-slate-200">Mode Terang</p>
+                  <p className="text-[10px] text-slate-400">Light Clean Contrast</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Cloud Database (Firebase) Config */}
           <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-800 mb-3.5">
