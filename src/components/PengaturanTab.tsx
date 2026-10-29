@@ -124,6 +124,26 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
             Identitas Sekolah & Wali Kelas
           </h3>
 
+          {/* School Official Logo Badge Display */}
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800 mb-4">
+            <div className="w-12 h-14 flex items-center justify-center p-1 rounded-lg bg-slate-950/80 border border-slate-800 shrink-0">
+              <img
+                src="/logo-smk.png"
+                alt="Logo SMKS PGRI 1"
+                className="w-full h-full object-contain drop-shadow"
+              />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>Logo Utama Sekolah Terpasang</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-semibold">Aktif</span>
+              </p>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                SMK PGRI 1 Kota Sukabumi — YPLP PGRI
+              </p>
+            </div>
+          </div>
+
           <form onSubmit={handleSaveClassConfig} className="space-y-3.5 text-xs sm:text-sm">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">Nama Satuan Pendidikan</label>

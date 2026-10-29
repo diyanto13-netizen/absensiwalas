@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogIn, ShieldCheck, Lock, User, School, BadgeCheck, Sun, Moon } from 'lucide-react';
+import { LogIn, ShieldCheck, Lock, User, BadgeCheck, Sun, Moon } from 'lucide-react';
 import { AuthUser, TeacherProfile, SuperAdminConfig, ThemeMode } from '../types';
 import { DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN } from '../data/initialData';
 import { findTeacherByNipOrIdentifier, subscribeToTeachers, subscribeToSuperAdminConfig } from '../utils/firebase';
@@ -179,8 +179,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         {/* School Header */}
         <div className="text-center mb-6 relative">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-slate-800 text-white shadow-lg border border-indigo-500/20 mb-3">
-            <School className="w-7 h-7 text-indigo-200" />
+          <div className="inline-flex items-center justify-center mb-3">
+            <img
+              src="/logo-smk.png"
+              alt="Logo Resmi SMKS PGRI 1 Kota Sukabumi"
+              className="h-20 sm:h-24 w-auto object-contain drop-shadow-lg hover:scale-105 transition-transform duration-300"
+            />
           </div>
           <p className="text-[11px] sm:text-xs font-bold tracking-wider text-indigo-400 uppercase">
             SMKS PGRI 1 KOTA SUKABUMI

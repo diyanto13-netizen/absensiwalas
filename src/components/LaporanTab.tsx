@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Printer, Send, MessageCircle, FileText, CheckCircle2, 
-  School, AlertCircle, Share2, Sparkles 
+  AlertCircle, Share2, Sparkles 
 } from 'lucide-react';
 import { Student, DailyAttendance, ClassConfig } from '../types';
 import { getWhatsAppLink, createDailyAttendanceWAMessage } from '../utils/whatsapp';
@@ -235,9 +235,13 @@ export const LaporanTab: React.FC<LaporanTabProps> = ({
         {/* Kop Surat SMKS PGRI 1 KOTA SUKABUMI */}
         <div className="text-center pb-3 border-b-4 border-double border-slate-300 print:border-black mb-6">
           <div className="flex items-center justify-center gap-4 mb-2">
-            {/* School Logo icon */}
-            <div className="w-16 h-16 rounded-xl bg-cyan-600 print:bg-slate-200 flex items-center justify-center text-white print:text-black">
-              <School className="w-10 h-10" />
+            {/* School Logo */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+              <img
+                src="/logo-smk.png"
+                alt="Logo Resmi SMKS PGRI 1"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <p className="text-xs font-semibold tracking-wider uppercase text-slate-300 print:text-black">

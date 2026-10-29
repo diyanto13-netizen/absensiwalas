@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { School, Clock, LogOut, Activity, Cloud, RefreshCw, Shield, Layers, Check, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Clock, LogOut, Activity, Cloud, RefreshCw, Shield, Layers, Check, ChevronDown, Sun, Moon } from 'lucide-react';
 import { ClassConfig, AuthUser, ActiveTab, ThemeMode } from '../types';
 import { DEFAULT_ROMBELS } from '../data/initialData';
 
@@ -87,8 +87,12 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* School & Class Identity */}
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-slate-800 flex items-center justify-center text-white border border-indigo-400/20 shadow-sm shrink-0">
-              <School className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-200" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-900/60 dark:bg-slate-900/80 flex items-center justify-center p-0.5 border border-slate-700/60 shadow-sm shrink-0">
+              <img
+                src="/logo-smk.png"
+                alt="Logo SMKS PGRI 1"
+                className="w-full h-full object-contain drop-shadow"
+              />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
