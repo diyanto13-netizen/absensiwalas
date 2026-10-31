@@ -68,7 +68,7 @@ export default function App() {
   const [teachers, setTeachers] = useState<TeacherProfile[]>(DEFAULT_TEACHERS);
   const [superAdminConfig, setSuperAdminConfig] = useState<SuperAdminConfig>(DEFAULT_SUPER_ADMIN);
 
-  // State Tema (Mode Gelap & Mode Terang)
+  // State Tema (Mode Gelap, Sunrise Foto 1, Neon Foto 2, Mode Terang)
   const [theme, setTheme] = useState<ThemeMode>(() => getStoredTheme());
 
   useEffect(() => {
@@ -77,10 +77,15 @@ export default function App() {
 
   const handleToggleTheme = useCallback(() => {
     setTheme((prev) => {
-      const next: ThemeMode = prev === 'dark' ? 'light' : 'dark';
+      const next: ThemeMode = prev === 'light' ? 'dark' : 'light';
       applyTheme(next);
       return next;
     });
+  }, []);
+
+  const handleChangeTheme = useCallback((newTheme: ThemeMode) => {
+    setTheme(newTheme);
+    applyTheme(newTheme);
   }, []);
 
   // State Sistem Notifikasi Toast
@@ -496,13 +501,38 @@ export default function App() {
   }, [attendanceData, currentDate, students]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] relative selection:bg-cyan-500 selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] relative selection:bg-cyan-500 selection:text-white transition-colors duration-500">
       
-      {/* Background Decorative Gradients */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 no-print">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl" />
+      {/* Background Decorative Gradients & Ambient Glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 no-print transition-opacity duration-700">
+        {theme === 'sunrise' ? (
+          <>
+            {/* Palette Foto 1: Ocean Cyan, Golden Amber & Sunset Orange */}
+            <div className="absolute -top-32 -left-32 w-[30rem] h-[30rem] bg-cyan-500/18 rounded-full blur-[100px]" />
+            <div className="absolute top-1/4 -right-32 w-[32rem] h-[32rem] bg-amber-500/16 rounded-full blur-[110px]" />
+            <div className="absolute -bottom-36 left-1/4 w-[36rem] h-[36rem] bg-orange-600/15 rounded-full blur-[120px]" />
+          </>
+        ) : theme === 'neon' ? (
+          <>
+            {/* Palette Foto 2: Deep Indigo, Electric Violet & Neon Fuchsia */}
+            <div className="absolute -top-32 right-1/4 w-[32rem] h-[32rem] bg-indigo-600/16 rounded-full blur-[100px]" />
+            <div className="absolute top-1/3 -right-28 w-[34rem] h-[34rem] bg-purple-600/20 rounded-full blur-[110px]" />
+            <div className="absolute -bottom-32 -left-20 w-[36rem] h-[36rem] bg-pink-500/22 rounded-full blur-[120px]" />
+          </>
+        ) : theme === 'light' ? (
+          <>
+            <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-400/5 rounded-full blur-3xl" />
+            <div className="absolute top-1/3 -right-40 w-96 h-96 bg-amber-400/5 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 left-1/4 w-96 h-96 bg-indigo-400/5 rounded-full blur-3xl" />
+          </>
+        ) : (
+          <>
+            {/* Default Dark Slate */}
+            <div className="absolute -top-40 -left-40 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl" />
+            <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl" />
+          </>
+        )}
       </div>
 
       {/* Login Screen (Tampil jika belum login) */}
@@ -600,6 +630,7 @@ export default function App() {
                 isAdmin={user.role === 'admin'}
                 theme={theme}
                 onToggleTheme={handleToggleTheme}
+                onChangeTheme={handleChangeTheme}
               />
             )}
           </main>

@@ -35,30 +35,117 @@ export const exportStudentsToExcel = (students: Student[], kelasName = 'XII TKJ 
 
 /**
  * Unduh Template Excel untuk Input Siswa Massal
+ * Menyediakan lembar data sampel dan lembar petunjuk pengisian format
  */
 export const downloadStudentTemplateExcel = (): void => {
+  // Lembar 1: Contoh Data Siswa Siap Isi
   const sampleData = [
     {
-      'NIS': '22231035',
-      'Nama Lengkap': 'Contoh Siswa Baru',
+      'NIS': '22231001',
+      'Nama Lengkap': 'Ahmad Fauzi Rahman',
       'Jenis Kelamin': 'L',
       'No HP Ortu': '081234567890',
-      'Alamat': 'Jl. Pelabuhan II, Kota Sukabumi',
-      'Catatan': 'Pindahan dari SMK X',
+      'Alamat': 'Jl. Pelabuhan II No. 12, Kel. Warudoyong, Sukabumi',
+      'Catatan': 'Ketua Kelas',
     },
     {
-      'NIS': '22231036',
-      'Nama Lengkap': 'Contoh Siswi Baru',
+      'NIS': '22231002',
+      'Nama Lengkap': 'Anindya Putri Lestari',
       'Jenis Kelamin': 'P',
       'No HP Ortu': '085712345678',
-      'Alamat': 'Baros, Kota Sukabumi',
+      'Alamat': 'Jl. Sudirman No. 88, Gunungpuyuh, Sukabumi',
+      'Catatan': 'Sekretaris Kelas',
+    },
+    {
+      'NIS': '22231003',
+      'Nama Lengkap': 'Bagus Prasetyo',
+      'Jenis Kelamin': 'L',
+      'No HP Ortu': '087890123456',
+      'Alamat': 'Kp. Lembursitu RT 02/04, Lembursitu, Sukabumi',
+      'Catatan': 'Pengurus OSIS',
+    },
+    {
+      'NIS': '22231004',
+      'Nama Lengkap': 'Citra Kirana Dewi',
+      'Jenis Kelamin': 'P',
+      'No HP Ortu': '089678901234',
+      'Alamat': 'Jl. Bhayangkara No. 40, Cikole, Sukabumi',
+      'Catatan': '',
+    },
+    {
+      'NIS': '22231005',
+      'Nama Lengkap': 'Dimas Wahyu Pratama',
+      'Jenis Kelamin': 'L',
+      'No HP Ortu': '082134567891',
+      'Alamat': 'Baros Pasar RT 01/05, Baros, Sukabumi',
       'Catatan': '',
     },
   ];
 
   const worksheet = XLSX.utils.json_to_sheet(sampleData);
+
+  // Atur lebar kolom agar langsung rapi saat dibuka di Microsoft Excel
+  worksheet['!cols'] = [
+    { wch: 15 }, // NIS
+    { wch: 28 }, // Nama Lengkap
+    { wch: 16 }, // Jenis Kelamin (L/P)
+    { wch: 20 }, // No HP Ortu
+    { wch: 48 }, // Alamat / Domisili
+    { wch: 22 }, // Catatan
+  ];
+
+  // Lembar 2: Petunjuk Format Pengisian
+  const petunjukData = [
+    {
+      'Nama Kolom': 'NIS',
+      'Wajib/Opsional': 'WAJIB',
+      'Format Data': 'Angka / Teks Unik (contoh: 22231001)',
+      'Keterangan': 'Nomor Induk Siswa. Tidak boleh duplikat antar siswa.',
+    },
+    {
+      'Nama Kolom': 'Nama Lengkap',
+      'Wajib/Opsional': 'WAJIB',
+      'Format Data': 'Teks (contoh: Ahmad Fauzi)',
+      'Keterangan': 'Nama lengkap siswa sesuai ijazah/rapor resmi.',
+    },
+    {
+      'Nama Kolom': 'Jenis Kelamin',
+      'Wajib/Opsional': 'WAJIB',
+      'Format Data': 'Huruf L atau P',
+      'Keterangan': 'Ketik L untuk Laki-laki atau P untuk Perempuan.',
+    },
+    {
+      'Nama Kolom': 'No HP Ortu',
+      'Wajib/Opsional': 'Disarankan',
+      'Format Data': 'Nomor WhatsApp (contoh: 081234567890)',
+      'Keterangan': 'Nomor kontak aktif orang tua untuk notifikasi WhatsApp presensi.',
+    },
+    {
+      'Nama Kolom': 'Alamat',
+      'Wajib/Opsional': 'Opsional',
+      'Format Data': 'Teks domisili siswa',
+      'Keterangan': 'Alamat rumah atau kelurahan siswa di Kota Sukabumi.',
+    },
+    {
+      'Nama Kolom': 'Catatan',
+      'Wajib/Opsional': 'Opsional',
+      'Format Data': 'Teks catatan singkat',
+      'Keterangan': 'Peran di kelas (misal: Ketua Kelas, OSIS) atau keterangan lainnya.',
+    },
+  ];
+
+  const worksheetPetunjuk = XLSX.utils.json_to_sheet(petunjukData);
+  worksheetPetunjuk['!cols'] = [
+    { wch: 18 },
+    { wch: 16 },
+    { wch: 36 },
+    { wch: 56 },
+  ];
+
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Template Siswa');
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Siswa');
+  XLSX.utils.book_append_sheet(workbook, worksheetPetunjuk, 'Petunjuk Pengisian');
+
   XLSX.writeFile(workbook, 'Template_Import_Siswa_SMK_PGRI_1.xlsx');
 };
 

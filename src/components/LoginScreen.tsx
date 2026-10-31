@@ -166,13 +166,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             type="button"
             onClick={onToggleTheme}
             className="absolute top-4 right-4 p-2 rounded-xl bg-slate-900/60 hover:bg-slate-800 text-slate-300 border border-slate-800 transition cursor-pointer touch-manipulation z-10"
-            title={theme === 'dark' ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}
+            title={theme === 'light' ? 'Beralih ke Mode Gelap' : 'Beralih ke Mode Terang'}
             aria-label="Toggle Theme"
           >
-            {theme === 'dark' ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
+            {theme === 'light' ? (
               <Moon className="w-4 h-4 text-indigo-500" />
+            ) : (
+              <Sun className="w-4 h-4 text-amber-400" />
             )}
           </button>
         )}

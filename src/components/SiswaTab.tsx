@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { 
   Users, UserPlus, FileSpreadsheet, Download, Upload, 
   Search, Edit3, Trash2, CheckCircle2, AlertTriangle, Phone, MapPin, X, 
-  LayoutList, LayoutGrid 
+  LayoutList, LayoutGrid, HelpCircle, Info, FileCheck
 } from 'lucide-react';
 import { Student } from '../types';
 import { exportStudentsToExcel, parseStudentsFromExcel, downloadStudentTemplateExcel } from '../utils/excel';
@@ -29,6 +29,9 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
   // Modal State for Add / Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+
+  // Modal State for Template Guidance
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
   // Form Fields
   const [formData, setFormData] = useState<{
@@ -249,9 +252,31 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
             />
 
             <button
+              type="button"
+              onClick={() => {
+                downloadStudentTemplateExcel();
+                showToast('Template Diunduh', 'File Template_Import_Siswa_SMK_PGRI_1.xlsx berhasil diunduh.', 'success');
+              }}
+              className="px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 transition touch-manipulation cursor-pointer shadow-sm shadow-emerald-950/40"
+              title="Unduh format file Excel (.xlsx) untuk impor massal data siswa"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Template Excel</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsTemplateModalOpen(true)}
+              className="p-2 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition touch-manipulation cursor-pointer"
+              title="Petunjuk & Format Kolom Excel"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+
+            <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 flex items-center gap-1.5 transition touch-manipulation cursor-pointer"
-              title="Unggah Excel (.xlsx)"
+              className="px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 transition touch-manipulation cursor-pointer"
+              title="Unggah Excel (.xlsx) data siswa"
             >
               <Upload className="w-3.5 h-3.5 text-indigo-400" />
               <span>Impor Excel</span>
@@ -761,6 +786,153 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>{isDeletingAll ? 'Menghapus Semua...' : `Ya, Hapus Semua (${students.length})`}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Template Excel Guidance Modal */}
+      {isTemplateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
+          <div className="w-full max-w-2xl p-5 sm:p-6 rounded-2xl glass-panel border border-slate-700 shadow-2xl my-auto space-y-4">
+            
+            <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                  <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white tracking-tight">
+                    Template & Petunjuk Impor Data Siswa
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Format resmi Microsoft Excel (.xlsx) SMKS PGRI 1 Kota Sukabumi
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsTemplateModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Download Banner */}
+            <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  Template Siap Pakai (.xlsx)
+                </p>
+                <p className="text-[11px] text-slate-300 mt-0.5">
+                  Berisi lembar contoh data terisi serta lembar panduan kolom otomatis.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  downloadStudentTemplateExcel();
+                  showToast('Template Diunduh', 'File Template_Import_Siswa_SMK_PGRI_1.xlsx berhasil diunduh.', 'success');
+                }}
+                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer transition shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                <span>Unduh File Template</span>
+              </button>
+            </div>
+
+            {/* Table Column Format Specs */}
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-slate-200">Struktur Kolom yang Diterima Sistem:</p>
+              <div className="overflow-x-auto rounded-xl border border-slate-800">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-3">Nama Kolom</th>
+                      <th className="py-2.5 px-3">Status</th>
+                      <th className="py-2.5 px-3">Contoh Format</th>
+                      <th className="py-2.5 px-3">Keterangan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/70 text-slate-300">
+                    <tr>
+                      <td className="py-2 px-3 font-mono text-indigo-300 font-semibold">NIS</td>
+                      <td className="py-2 px-3"><span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950/60 text-rose-300 border border-rose-500/20">Wajib</span></td>
+                      <td className="py-2 px-3 font-mono text-slate-400">22231001</td>
+                      <td className="py-2 px-3 text-slate-400">Nomor induk unik peserta didik</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-3 font-semibold text-white">Nama Lengkap</td>
+                      <td className="py-2 px-3"><span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950/60 text-rose-300 border border-rose-500/20">Wajib</span></td>
+                      <td className="py-2 px-3 text-slate-400">Ahmad Fauzi Rahman</td>
+                      <td className="py-2 px-3 text-slate-400">Nama lengkap sesuai rapor / akta</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-3 font-mono text-slate-200">Jenis Kelamin</td>
+                      <td className="py-2 px-3"><span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950/60 text-rose-300 border border-rose-500/20">Wajib</span></td>
+                      <td className="py-2 px-3 font-mono text-blue-300">L atau P</td>
+                      <td className="py-2 px-3 text-slate-400">L = Laki-laki, P = Perempuan</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-3 font-mono text-slate-200">No HP Ortu</td>
+                      <td className="py-2 px-3"><span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950/60 text-amber-300 border border-amber-500/20">Disarankan</span></td>
+                      <td className="py-2 px-3 font-mono text-emerald-300">081234567890</td>
+                      <td className="py-2 px-3 text-slate-400">Nomor WhatsApp orang tua aktif</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-3 text-slate-200">Alamat</td>
+                      <td className="py-2 px-3"><span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">Opsional</span></td>
+                      <td className="py-2 px-3 text-slate-400">Lembursitu, Kota Sukabumi</td>
+                      <td className="py-2 px-3 text-slate-400">Domisili atau tempat tinggal siswa</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-3 text-slate-200">Catatan</td>
+                      <td className="py-2 px-3"><span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">Opsional</span></td>
+                      <td className="py-2 px-3 text-slate-400">Ketua Kelas / OSIS</td>
+                      <td className="py-2 px-3 text-slate-400">Keterangan tambahan</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Practical Tips */}
+            <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800 text-xs text-slate-400 space-y-1">
+              <p className="font-semibold text-slate-200 flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-indigo-400" />
+                Tips Penggunaan:
+              </p>
+              <ul className="list-disc list-inside space-y-0.5 text-[11px] text-slate-300 pl-1">
+                <li>Buka file template yang telah diunduh di <strong>Microsoft Excel</strong>, <strong>Google Sheets</strong>, atau <strong>WPS Office</strong>.</li>
+                <li>Hapus baris data contoh atau timpa dengan data siswa kelas Anda.</li>
+                <li>Simpan file tetap dalam format <strong>.xlsx</strong> atau <strong>.xls</strong>.</li>
+                <li>Klik tombol <strong>"Impor Excel"</strong> di halaman Data Siswa untuk memasukkan data secara massal dalam hitungan detik.</li>
+              </ul>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsTemplateModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer"
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsTemplateModalOpen(false);
+                  fileInputRef.current?.click();
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Pilih File Excel & Impor</span>
               </button>
             </div>
 

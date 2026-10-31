@@ -48,6 +48,72 @@
 }
 
 /* ========================================================
+   FOTO 1: SUNRISE HORIZON & OCEAN AMBER PALETTE
+   ======================================================== */
+html.theme-sunrise body {
+  background-color: #06131f;
+  color: #f1f5f9;
+}
+
+html.theme-sunrise #root > div {
+  background-color: #06131f !important;
+}
+
+html.theme-sunrise .glass-panel {
+  background: rgba(8, 22, 34, 0.88);
+  border-color: rgba(56, 189, 248, 0.16);
+  box-shadow: 0 8px 32px 0 rgba(2, 20, 36, 0.4);
+}
+
+html.theme-sunrise .glass-card {
+  background: rgba(6, 18, 30, 0.75);
+  border-color: rgba(56, 189, 248, 0.12);
+}
+
+html.theme-sunrise .glass-input {
+  background: rgba(5, 15, 25, 0.88);
+  border-color: rgba(56, 189, 248, 0.18);
+}
+
+html.theme-sunrise .glass-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+}
+
+/* ========================================================
+   FOTO 2: CYBER MIDNIGHT & NEON FUCHSIA PALETTE
+   ======================================================== */
+html.theme-neon body {
+  background-color: #070719;
+  color: #f1f5f9;
+}
+
+html.theme-neon #root > div {
+  background-color: #070719 !important;
+}
+
+html.theme-neon .glass-panel {
+  background: rgba(18, 14, 38, 0.88);
+  border-color: rgba(192, 132, 252, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(10, 5, 25, 0.5);
+}
+
+html.theme-neon .glass-card {
+  background: rgba(14, 10, 30, 0.75);
+  border-color: rgba(192, 132, 252, 0.14);
+}
+
+html.theme-neon .glass-input {
+  background: rgba(12, 8, 26, 0.88);
+  border-color: rgba(236, 72, 153, 0.22);
+}
+
+html.theme-neon .glass-input:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.25);
+}
+
+/* ========================================================
    LIGHT MODE STYLING & ADAPTATION
    ======================================================== */
 html.light {

@@ -229,16 +229,16 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={onToggleTheme}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs transition border cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border-slate-800 text-slate-300 touch-manipulation"
-              title={theme === 'dark' ? 'Beralih ke Mode Terang (Light Mode)' : 'Beralih ke Mode Gelap (Dark Mode)'}
+              title={theme === 'light' ? 'Beralih ke Mode Gelap (Dark Mode)' : 'Beralih ke Mode Terang (Light Mode)'}
               aria-label="Toggle Theme Mode"
             >
-              {theme === 'dark' ? (
-                <Sun className="w-3.5 h-3.5 text-amber-400 transition-transform duration-300 hover:rotate-45" />
-              ) : (
+              {theme === 'light' ? (
                 <Moon className="w-3.5 h-3.5 text-indigo-500 transition-transform duration-300 -rotate-12" />
+              ) : (
+                <Sun className="w-3.5 h-3.5 text-amber-400 transition-transform duration-300 hover:rotate-45" />
               )}
               <span className="hidden sm:inline text-[11px] font-medium">
-                {theme === 'dark' ? 'Terang' : 'Gelap'}
+                {theme === 'light' ? 'Gelap' : 'Terang'}
               </span>
             </button>
 

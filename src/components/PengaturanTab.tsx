@@ -19,6 +19,7 @@ interface PengaturanTabProps {
   isAdmin?: boolean;
   theme?: ThemeMode;
   onToggleTheme?: () => void;
+  onChangeTheme?: (theme: ThemeMode) => void;
 }
 
 export const PengaturanTab: React.FC<PengaturanTabProps> = ({
@@ -32,6 +33,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
   isAdmin = false,
   theme = 'dark',
   onToggleTheme,
+  onChangeTheme,
 }) => {
   const [localConfig, setLocalConfig] = useState<ClassConfig>(config);
   const [localFirebase, setLocalFirebase] = useState<FirebaseConfigState>(firebaseConfig);
@@ -257,62 +259,128 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
         {/* Right Column: Theme, Cloud Firebase & Backup/Restore */}
         <div className="space-y-6">
           
-          {/* Theme Mode Selector Card */}
+          {/* Theme Mode & Background Palette Selector Card */}
           <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-800 mb-3.5">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                {theme === 'dark' ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
-                Tema Tampilan Sistem
+                <Sparkles className="w-4 h-4 text-indigo-400" />
+                Tema & Warna Latar Belakang
               </h3>
               <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
-                {theme === 'dark' ? 'Mode Gelap Aktif' : 'Mode Terang Aktif'}
+                {theme === 'sunrise' ? 'Sunrise Foto 1' : theme === 'neon' ? 'Neon Foto 2' : theme === 'light' ? 'Mode Terang' : 'Default Slate'}
               </span>
             </div>
 
             <p className="text-xs text-slate-300 mb-3.5 leading-relaxed">
-              Pilih mode tampilan sesuai kenyamanan Anda saat mengelola data siswa di dalam ruangan maupun di luar ruangan.
+              Pilih palet warna latar belakang sesuai selera atau rekomendasi desain dari foto identitas sekolah:
             </p>
 
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              
+              {/* Opsi 1: Default Slate Dark */}
               <button
                 type="button"
                 onClick={() => {
-                  if (theme !== 'dark' && onToggleTheme) onToggleTheme();
+                  if (onChangeTheme) onChangeTheme('dark');
+                  else if (onToggleTheme && theme !== 'dark') onToggleTheme();
                 }}
-                className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition cursor-pointer touch-manipulation ${
+                className={`p-3 rounded-xl border flex items-center gap-3 transition cursor-pointer text-left touch-manipulation ${
                   theme === 'dark'
-                    ? 'bg-indigo-950/70 border-indigo-500 text-white shadow-sm ring-1 ring-indigo-500/50'
-                    : 'bg-slate-900/50 hover:bg-slate-800 border-slate-800 text-slate-400'
+                    ? 'bg-slate-900 border-indigo-500 ring-1 ring-indigo-500/60 shadow-md'
+                    : 'bg-slate-900/50 hover:bg-slate-800/80 border-slate-800 text-slate-400'
                 }`}
               >
-                <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-indigo-400">
-                  <Moon className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 flex items-center justify-center shrink-0">
+                  <Moon className="w-4 h-4 text-indigo-400" />
                 </div>
-                <div className="text-center">
-                  <p className="text-xs font-bold">Mode Gelap</p>
-                  <p className="text-[10px] text-slate-400">Dark Glassmorphism</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-white truncate">Default Slate Dark</p>
+                    {theme === 'dark' && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+                  </div>
+                  <p className="text-[10px] text-slate-400 truncate">Deep Slate Glassmorphism</p>
                 </div>
               </button>
 
+              {/* Opsi 2: Sunrise PGRI & Ocean Amber (Rekomendasi Foto 1) */}
               <button
                 type="button"
                 onClick={() => {
-                  if (theme !== 'light' && onToggleTheme) onToggleTheme();
+                  if (onChangeTheme) onChangeTheme('sunrise');
                 }}
-                className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition cursor-pointer touch-manipulation ${
-                  theme === 'light'
-                    ? 'bg-amber-500/15 border-amber-500 text-white shadow-sm ring-1 ring-amber-500/50'
-                    : 'bg-slate-900/50 hover:bg-slate-800 border-slate-800 text-slate-400'
+                className={`p-3 rounded-xl border flex items-center gap-3 transition cursor-pointer text-left touch-manipulation ${
+                  theme === 'sunrise'
+                    ? 'bg-cyan-950/60 border-cyan-400 ring-1 ring-cyan-400/60 shadow-md'
+                    : 'bg-slate-900/50 hover:bg-slate-800/80 border-slate-800 text-slate-400'
                 }`}
               >
-                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-center text-amber-500">
-                  <Sun className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-600 via-amber-500 to-orange-600 border border-cyan-400/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <div className="w-4 h-4 rounded-full bg-slate-950/70 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-xs font-bold text-slate-200">Mode Terang</p>
-                  <p className="text-[10px] text-slate-400">Light Clean Contrast</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-white truncate">Sunrise PGRI Horizon</p>
+                    <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300">Foto 1</span>
+                    {theme === 'sunrise' && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
+                  </div>
+                  <p className="text-[10px] text-cyan-300/80 truncate">Ocean Teal & Warm Amber</p>
                 </div>
               </button>
+
+              {/* Opsi 3: Cyber Midnight & Neon Fuchsia (Rekomendasi Foto 2) */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onChangeTheme) onChangeTheme('neon');
+                }}
+                className={`p-3 rounded-xl border flex items-center gap-3 transition cursor-pointer text-left touch-manipulation ${
+                  theme === 'neon'
+                    ? 'bg-fuchsia-950/60 border-fuchsia-500 ring-1 ring-fuchsia-500/60 shadow-md'
+                    : 'bg-slate-900/50 hover:bg-slate-800/80 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-900 via-purple-700 to-pink-500 border border-fuchsia-400/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <div className="w-4 h-4 rounded-full bg-slate-950/70 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-white truncate">Cyber Midnight Neon</p>
+                    <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-pink-500/20 text-pink-300">Foto 2</span>
+                    {theme === 'neon' && <CheckCircle2 className="w-3.5 h-3.5 text-pink-400 shrink-0" />}
+                  </div>
+                  <p className="text-[10px] text-pink-300/80 truncate">Deep Violet & Fuchsia Glow</p>
+                </div>
+              </button>
+
+              {/* Opsi 4: Mode Terang (Siang) */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onChangeTheme) onChangeTheme('light');
+                  else if (onToggleTheme && theme !== 'light') onToggleTheme();
+                }}
+                className={`p-3 rounded-xl border flex items-center gap-3 transition cursor-pointer text-left touch-manipulation ${
+                  theme === 'light'
+                    ? 'bg-amber-500/15 border-amber-500 ring-1 ring-amber-500/60 shadow-md'
+                    : 'bg-slate-900/50 hover:bg-slate-800/80 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-center shrink-0">
+                  <Sun className="w-4 h-4 text-amber-500" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-slate-200 truncate">Mode Terang (Siang)</p>
+                    {theme === 'light' && <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                  </div>
+                  <p className="text-[10px] text-slate-400 truncate">Light Clean High-Contrast</p>
+                </div>
+              </button>
+
             </div>
           </div>
 
