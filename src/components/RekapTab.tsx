@@ -71,8 +71,14 @@ export const RekapTab: React.FC<RekapTabProps> = ({
       }
     });
 
-    const totalHari = recordedDates.length || 1;
-    const persentase = Math.round((hadir / totalHari) * 100);
+    const totalDiabsen = hadir + sakit + izin + alpa;
+    // Total hari efektif kehadiran riil siswa:
+    // Dihitung berdasarkan sesi presensi riil siswa (hadir + sakit + izin + alpa).
+    // Jika siswa hadir pada semua pertemuan yang diabsen (hadir === totalDiabsen), persentasenya mutlak 100%!
+    const totalHari = totalDiabsen > 0 ? totalDiabsen : (recordedDates.length || 0);
+    const persentase = totalDiabsen > 0 
+      ? Math.round((hadir / totalDiabsen) * 100) 
+      : (totalHari > 0 ? 0 : 100);
 
     studentRecapMap[s.id] = { hadir, sakit, izin, alpa, total: totalHari, persentase };
 
@@ -488,7 +494,7 @@ export const RekapTab: React.FC<RekapTabProps> = ({
               </h3>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Pemantauan fluktuasi kedisiplinan belajar rombel XII TKJ 2 terhadap batas kelulusan minimal (85%).
+              Pemantauan fluktuasi kedisiplinan belajar rombel {config.kelas} terhadap batas kelulusan minimal (85%).
             </p>
           </div>
 
@@ -590,15 +596,15 @@ export const RekapTab: React.FC<RekapTabProps> = ({
                 <th className="py-3 px-3 text-center text-amber-400">Sakit</th>
                 <th className="py-3 px-3 text-center text-cyan-400">Izin</th>
                 <th className="py-3 px-3 text-center text-rose-400">Alpa</th>
-                <th className="py-3 px-4 text-center">Persentase</th>
+                <th className="py-3 px-4 text-center">Persentase Riil</th>
                 <th className="py-3 px-3 text-center">Status</th>
                 <th className="py-3 px-4 text-center">Notifikasi WA</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {students.map((student, idx) => {
-                const recap = studentRecapMap[student.id] || { hadir: 0, sakit: 0, izin: 0, alpa: 0, total: 1, persentase: 100 };
-                const isWarning = recap.persentase < 85;
+                const recap = studentRecapMap[student.id] || { hadir: 0, sakit: 0, izin: 0, alpa: 0, total: 0, persentase: 100 };
+                const isWarning = recap.total > 0 && recap.persentase < 85;
 
                 return (
                   <tr key={student.id} className="hover:bg-slate-800/40 transition">

@@ -62,7 +62,7 @@ ${status === 'S' ? 'Semoga putra/putri Bapak/Ibu lekas sembuh dan dapat beraktiv
 
 Demikian informasi ini kami sampaikan. Terima kasih atas perhatian dan kerja samanya.
 
-Wali Kelas XII TKJ 2:
+Wali Kelas *${config.kelas}*:
 *${config.waliKelas}*
 NIP: ${config.nipWaliKelas}`;
 };
@@ -77,28 +77,44 @@ export const createMonthlyRecapWAMessage = (
   recap: { hadir: number; sakit: number; izin: number; alpa: number; total: number; persentase: number },
   config: ClassConfig
 ): string => {
+  // Hitung riil: total hari efektif pertemuan siswa (H + S + I + A)
+  const totalDiabsen = recap.hadir + recap.sakit + recap.izin + recap.alpa;
+  const totalHari = totalDiabsen > 0 ? totalDiabsen : recap.total;
+  const persentaseRiil = totalHari > 0 ? Math.round((recap.hadir / totalHari) * 100) : (recap.persentase || 100);
+
+  let statusDisiplin = '';
+  if (persentaseRiil === 100) {
+    statusDisiplin = '🌟 *Kehadiran Sempurna (100%)* — Sangat disiplin dan hadir penuh pada seluruh hari efektif KBM.';
+  } else if (persentaseRiil >= 90) {
+    statusDisiplin = '🌟 *Sangat Baik* — Pertahankan kedisiplinan dan semangat belajar ananda!';
+  } else if (persentaseRiil >= 85) {
+    statusDisiplin = '✅ *Baik* — Memenuhi standar kedisiplinan presensi sekolah.';
+  } else {
+    statusDisiplin = '⚠️ *Perhatian Khusus* — Persentase kehadiran berada di bawah batas minimum (85%). Mohon bantuan Bapak/Ibu untuk meningkatkan kedisiplinan ananda.';
+  }
+
   return `*LAPORAN REKAP KEHADIRAN BULANAN*
 *${config.namaSekolah}*
 --------------------------------------------------
 Yth. Bapak/Ibu Orang Tua/Wali dari:
 Nama Siswa: *${student.nama}*
-NIS: ${student.nis}
-Kelas: *${config.kelas}*
+NIS: *${student.nis}*
+Kelas: *${config.kelas}* (${config.programKeahlian})
 
-Berikut adalah ringkasan kehadiran putra/putri Bapak/Ibu pada bulan *${monthName} ${year}*:
-- Hadir: *${recap.hadir} hari*
-- Sakit: *${recap.sakit} hari*
-- Izin: *${recap.izin} hari*
-- Alpa: *${recap.alpa} hari*
-- Total Pertemuan Efektif: ${recap.total} hari
-- Persentase Kehadiran: *${recap.persentase}%*
+Berikut adalah rincian kehadiran riil putra/putri Bapak/Ibu pada bulan *${monthName} ${year}*:
+• Hadir (H): *${recap.hadir} hari*
+• Sakit (S): *${recap.sakit} hari*
+• Izin (I): *${recap.izin} hari*
+• Alpa (A): *${recap.alpa} hari*
+--------------------------------------------------
+• Total Hari Efektif Diabsen: *${totalHari} hari*
+• Persentase Kehadiran Riil: *${persentaseRiil}%*
+${totalHari > 0 ? `_(Perhitungan Riil: ${recap.hadir} hadir dari ${totalHari} hari efektif = ${persentaseRiil}%)_\n` : ''}
+${statusDisiplin}
 
-${recap.persentase >= 90 ? '🌟 Pertahankan kedisiplinan dan semangat belajar ananda!' : ''}
-${recap.persentase < 80 ? '⚠️ Perhatian: Persentase kehadiran berada di bawah batas minimum (80%). Mohon bantuan Bapak/Ibu untuk meningkatkan kedisiplinan ananda.' : ''}
+Demikian informasi rekap presensi ini kami sampaikan. Terima kasih atas kerja sama dan perhatian Bapak/Ibu dalam mendampingi putra/putri kita.
 
-Terima kasih atas kerja sama Bapak/Ibu dalam mendampingi putra/putri kita.
-
-Wali Kelas:
+Wali Kelas *${config.kelas}*:
 *${config.waliKelas}*
 NIP: ${config.nipWaliKelas}`;
 };

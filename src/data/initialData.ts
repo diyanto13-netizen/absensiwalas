@@ -203,15 +203,14 @@ export const generateInitialAttendanceData = (students: Student[]): Record<strin
       let status: 'H' | 'S' | 'I' | 'A' = 'H';
       let catatan = '';
 
-      if ((idx + dateIdx) % 17 === 0) {
+      // Default siswa hadir 100% riil sesuai seluruh hari efektif KBM.
+      // Hanya ada 2 contoh kasus realistis siswa sakit/izin untuk keperluan demonstrasi visual.
+      if (s.id === 'std-03' && date === '2026-10-23') {
         status = 'S';
-        catatan = 'Demam dan flu';
-      } else if ((idx + dateIdx) % 19 === 0) {
+        catatan = 'Sakit flu & demam (Surat Dokter terlampir)';
+      } else if (s.id === 'std-07' && date === '2026-10-26') {
         status = 'I';
-        catatan = 'Acara keluarga';
-      } else if ((idx + dateIdx) % 31 === 0 && dateIdx > 2) {
-        status = 'A';
-        catatan = 'Tanpa keterangan';
+        catatan = 'Izin keperluan keluarga (Surat Orang Tua)';
       }
 
       records[s.id] = {

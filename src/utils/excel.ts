@@ -266,8 +266,9 @@ export const exportMonthlyRecapToExcel = (
       }
     });
 
-    const totalHari = relevantDates.length || 1;
-    const persentase = Math.round((hadir / totalHari) * 100);
+    const totalDiabsen = hadir + sakit + izin + alpa;
+    const totalHari = totalDiabsen > 0 ? totalDiabsen : (relevantDates.length || 0);
+    const persentase = totalDiabsen > 0 ? Math.round((hadir / totalDiabsen) * 100) : (totalHari > 0 ? 0 : 100);
 
     return {
       'No': index + 1,
@@ -278,7 +279,7 @@ export const exportMonthlyRecapToExcel = (
       'Sakit (S)': sakit,
       'Izin (I)': izin,
       'Alpa (A)': alpa,
-      'Total Pertemuan': relevantDates.length,
+      'Total Pertemuan': totalHari,
       'Kehadiran (%)': `${persentase}%`,
     };
   });

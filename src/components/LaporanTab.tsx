@@ -339,8 +339,9 @@ export const LaporanTab: React.FC<LaporanTabProps> = ({
                     else if (st === 'I') i++;
                     else if (st === 'A') a++;
                   });
-                  const total = recordedDatesMonth.length || 1;
-                  const rate = Math.round((h / total) * 100);
+                  const totalDiabsen = h + s + i + a;
+                  const total = totalDiabsen > 0 ? totalDiabsen : (recordedDatesMonth.length || 0);
+                  const rate = totalDiabsen > 0 ? Math.round((h / totalDiabsen) * 100) : (total > 0 ? 0 : 100);
 
                   return (
                     <tr key={student.id} className="border border-slate-800 print:border-black">
