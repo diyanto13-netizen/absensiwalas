@@ -91,7 +91,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
       <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/20">
               <Sliders className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
@@ -99,7 +99,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
                 Pengaturan Sistem & Rombel
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Kelola identitas kelas, kop surat resmi, akun wali kelas, dan konfigurasi Cloud Firestore.
+                Kelola identitas kelas, kop surat resmi, tema warna logo PGRI, dan sinkronisasi Cloud.
               </p>
             </div>
           </div>
@@ -108,9 +108,9 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
             <button
               type="button"
               onClick={onOpenAkunTab}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 flex items-center gap-2 transition cursor-pointer touch-manipulation self-start sm:self-auto"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20 flex items-center gap-2 transition cursor-pointer touch-manipulation self-start sm:self-auto"
             >
-              <Shield className="w-4 h-4 text-indigo-200" />
+              <Shield className="w-4 h-4 text-slate-950" />
               <span>Kelola Akun Wali Kelas & Super Admin</span>
             </button>
           )}
@@ -122,7 +122,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
         {/* Class & School Identity Form */}
         <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
           <h3 className="text-sm font-bold text-white mb-3.5 pb-2 border-b border-slate-800 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-indigo-400" />
+            <Shield className="w-4 h-4 text-amber-400" />
             Identitas Sekolah & Wali Kelas
           </h3>
 
@@ -248,9 +248,9 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
 
             <button
               type="submit"
-              className="w-full h-11 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 flex items-center justify-center gap-2 transition cursor-pointer mt-2 touch-manipulation"
+              className="w-full h-11 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 transition cursor-pointer mt-2 touch-manipulation"
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4 text-slate-950" />
               <span>Simpan Identitas Rombel</span>
             </button>
           </form>
@@ -263,21 +263,21 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
           <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-800 mb-3.5">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                Tema & Warna Latar Belakang
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                Tema & Palet Warna Logo SMKS PGRI 1
               </h3>
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
-                {theme === 'sunrise' ? 'Sunrise Foto 1' : theme === 'neon' ? 'Neon Foto 2' : theme === 'light' ? 'Mode Terang' : 'Default Slate'}
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/20">
+                {theme === 'emerald' ? 'Hijau Zamrud Logo' : theme === 'crimson' ? 'Merah Obor Logo' : theme === 'sunrise' ? 'Sunrise Foto 1' : theme === 'light' ? 'Mode Terang' : 'Emas PGRI (Default)'}
               </span>
             </div>
 
             <p className="text-xs text-slate-300 mb-3.5 leading-relaxed">
-              Pilih palet warna latar belakang sesuai selera atau rekomendasi desain dari foto identitas sekolah:
+              Pilih warna latar belakang & aksen sistem yang diambil langsung dari filosofi warna resmi logo SMK PGRI 1 Sukabumi:
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               
-              {/* Opsi 1: Default Slate Dark */}
+              {/* Opsi 1: Emas Keemasan PGRI (Rekomendasi Utama) */}
               <button
                 type="button"
                 onClick={() => {
@@ -286,73 +286,76 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
                 }}
                 className={`p-3 rounded-xl border flex items-center gap-3 transition cursor-pointer text-left touch-manipulation ${
                   theme === 'dark'
-                    ? 'bg-slate-900 border-indigo-500 ring-1 ring-indigo-500/60 shadow-md'
+                    ? 'bg-amber-950/40 border-amber-500 ring-1 ring-amber-500/60 shadow-md'
                     : 'bg-slate-900/50 hover:bg-slate-800/80 border-slate-800 text-slate-400'
                 }`}
               >
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 flex items-center justify-center shrink-0">
-                  <Moon className="w-4 h-4 text-indigo-400" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-xs font-bold text-white truncate">Default Slate Dark</p>
-                    {theme === 'dark' && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
-                  </div>
-                  <p className="text-[10px] text-slate-400 truncate">Deep Slate Glassmorphism</p>
-                </div>
-              </button>
-
-              {/* Opsi 2: Sunrise PGRI & Ocean Amber (Rekomendasi Foto 1) */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (onChangeTheme) onChangeTheme('sunrise');
-                }}
-                className={`p-3 rounded-xl border flex items-center gap-3 transition cursor-pointer text-left touch-manipulation ${
-                  theme === 'sunrise'
-                    ? 'bg-cyan-950/60 border-cyan-400 ring-1 ring-cyan-400/60 shadow-md'
-                    : 'bg-slate-900/50 hover:bg-slate-800/80 border-slate-800 text-slate-400'
-                }`}
-              >
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-600 via-amber-500 to-orange-600 border border-cyan-400/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <div className="w-4 h-4 rounded-full bg-slate-950/70 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-600 border border-amber-400/40 flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/20">
+                  <div className="w-4 h-4 rounded-full bg-slate-950/80 flex items-center justify-center">
                     <div className="w-2 h-2 rounded-full bg-amber-400"></div>
                   </div>
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-xs font-bold text-white truncate">Sunrise PGRI Horizon</p>
-                    <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300">Foto 1</span>
-                    {theme === 'sunrise' && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
+                    <p className="text-xs font-bold text-white truncate">Emas Keemasan</p>
+                    <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300">Utama</span>
+                    {theme === 'dark' && <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
                   </div>
-                  <p className="text-[10px] text-cyan-300/80 truncate">Ocean Teal & Warm Amber</p>
+                  <p className="text-[10px] text-amber-200/80 truncate">Perisai Kanan & Padi Emas</p>
                 </div>
               </button>
 
-              {/* Opsi 3: Cyber Midnight & Neon Fuchsia (Rekomendasi Foto 2) */}
+              {/* Opsi 2: Hijau Zamrud PGRI (Rekomendasi Alternatif 1) */}
               <button
                 type="button"
                 onClick={() => {
-                  if (onChangeTheme) onChangeTheme('neon');
+                  if (onChangeTheme) onChangeTheme('emerald');
                 }}
                 className={`p-3 rounded-xl border flex items-center gap-3 transition cursor-pointer text-left touch-manipulation ${
-                  theme === 'neon'
-                    ? 'bg-fuchsia-950/60 border-fuchsia-500 ring-1 ring-fuchsia-500/60 shadow-md'
+                  theme === 'emerald'
+                    ? 'bg-emerald-950/60 border-emerald-500 ring-1 ring-emerald-500/60 shadow-md'
                     : 'bg-slate-900/50 hover:bg-slate-800/80 border-slate-800 text-slate-400'
                 }`}
               >
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-900 via-purple-700 to-pink-500 border border-fuchsia-400/30 flex items-center justify-center shrink-0 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 border border-emerald-400/30 flex items-center justify-center shrink-0 shadow-sm">
                   <div className="w-4 h-4 rounded-full bg-slate-950/70 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+                    <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
                   </div>
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-xs font-bold text-white truncate">Cyber Midnight Neon</p>
-                    <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-pink-500/20 text-pink-300">Foto 2</span>
-                    {theme === 'neon' && <CheckCircle2 className="w-3.5 h-3.5 text-pink-400 shrink-0" />}
+                    <p className="text-xs font-bold text-white truncate">Hijau Zamrud</p>
+                    <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300">Logo</span>
+                    {theme === 'emerald' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
                   </div>
-                  <p className="text-[10px] text-pink-300/80 truncate">Deep Violet & Fuchsia Glow</p>
+                  <p className="text-[10px] text-emerald-300/80 truncate">Lingkaran Tradisi PGRI</p>
+                </div>
+              </button>
+
+              {/* Opsi 3: Merah Nyala Obor (Rekomendasi Alternatif 2) */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onChangeTheme) onChangeTheme('crimson');
+                }}
+                className={`p-3 rounded-xl border flex items-center gap-3 transition cursor-pointer text-left touch-manipulation ${
+                  theme === 'crimson'
+                    ? 'bg-rose-950/60 border-rose-500 ring-1 ring-rose-500/60 shadow-md'
+                    : 'bg-slate-900/50 hover:bg-slate-800/80 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-600 to-red-700 border border-rose-400/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <div className="w-4 h-4 rounded-full bg-slate-950/70 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-rose-400"></div>
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-white truncate">Merah Nyala Obor</p>
+                    <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-rose-500/20 text-rose-300">Suluh</span>
+                    {theme === 'crimson' && <CheckCircle2 className="w-3.5 h-3.5 text-rose-400 shrink-0" />}
+                  </div>
+                  <p className="text-[10px] text-rose-300/80 truncate">Api Semangat Guru PGRI</p>
                 </div>
               </button>
 
@@ -377,7 +380,7 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
                     <p className="text-xs font-bold text-slate-200 truncate">Mode Terang (Siang)</p>
                     {theme === 'light' && <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
                   </div>
-                  <p className="text-[10px] text-slate-400 truncate">Light Clean High-Contrast</p>
+                  <p className="text-[10px] text-slate-400 truncate">Light Clean Kontras Tinggi</p>
                 </div>
               </button>
 

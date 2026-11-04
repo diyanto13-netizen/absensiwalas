@@ -206,9 +206,9 @@ export const AbsensiTab: React.FC<AbsensiTabProps> = ({
 
             <button
               onClick={saveAttendance}
-              className="flex-1 sm:flex-initial px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-md shadow-indigo-600/30 flex items-center justify-center gap-2 transition touch-manipulation cursor-pointer active:scale-95"
+              className="flex-1 sm:flex-initial px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-md shadow-amber-500/25 flex items-center justify-center gap-2 transition touch-manipulation cursor-pointer active:scale-95"
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4 text-slate-950" />
               <span>Simpan</span>
             </button>
           </div>
@@ -236,9 +236,9 @@ export const AbsensiTab: React.FC<AbsensiTabProps> = ({
             <p className="text-lg sm:text-2xl font-bold text-white font-mono mt-0.5">{summary.alpa}</p>
           </div>
 
-          <div className="hidden sm:block glass-card p-3 rounded-xl border border-indigo-500/20">
-            <span className="text-xs text-indigo-300 font-medium">Persentase</span>
-            <p className="text-2xl font-bold text-indigo-200 font-mono mt-0.5">{persentaseHadir}%</p>
+          <div className="hidden sm:block glass-card p-3 rounded-xl border border-amber-500/20">
+            <span className="text-xs text-amber-300 font-medium">Persentase</span>
+            <p className="text-2xl font-bold text-amber-200 font-mono mt-0.5">{persentaseHadir}%</p>
           </div>
         </div>
       </div>
@@ -254,7 +254,7 @@ export const AbsensiTab: React.FC<AbsensiTabProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari Nama Siswa atau NIS..."
-            className="w-full pl-9 pr-3.5 py-2 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500"
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500 focus:border-amber-500 focus:ring-amber-500/30"
           />
         </div>
 
@@ -273,9 +273,9 @@ export const AbsensiTab: React.FC<AbsensiTabProps> = ({
               <button
                 key={item.id}
                 onClick={() => setFilterStatus(item.id as any)}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition touch-manipulation cursor-pointer shrink-0 ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition touch-manipulation cursor-pointer shrink-0 ${
                   filterStatus === item.id
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
                     : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -288,14 +288,14 @@ export const AbsensiTab: React.FC<AbsensiTabProps> = ({
           <div className="flex items-center p-0.5 rounded-lg bg-slate-900 border border-slate-800 shrink-0">
             <button
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded-md transition ${viewMode === 'cards' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+              className={`p-1.5 rounded-md transition ${viewMode === 'cards' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400'}`}
               title="Tampilan Kartu (Optimal untuk HP)"
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-md transition ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+              className={`p-1.5 rounded-md transition ${viewMode === 'table' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400'}`}
               title="Tampilan Tabel (Optimal untuk Komputer)"
             >
               <LayoutList className="w-4 h-4" />
@@ -537,9 +537,9 @@ export const AbsensiTab: React.FC<AbsensiTabProps> = ({
       <div className="md:hidden fixed bottom-20 right-4 z-30">
         <button
           onClick={saveAttendance}
-          className="px-5 py-3 rounded-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold text-xs shadow-xl shadow-indigo-600/40 flex items-center gap-2 transition active:scale-95 touch-manipulation cursor-pointer border border-indigo-400/30"
+          className="px-5 py-3 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 text-slate-950 font-bold text-xs shadow-xl shadow-amber-500/40 flex items-center gap-2 transition active:scale-95 touch-manipulation cursor-pointer border border-amber-300/40"
         >
-          <Save className="w-4 h-4" />
+          <Save className="w-4 h-4 text-slate-950" />
           <span>Simpan ({summary.hadir} Hadir)</span>
         </button>
       </div>
@@ -549,11 +549,11 @@ export const AbsensiTab: React.FC<AbsensiTabProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
           <div className="w-full max-w-md p-5 rounded-2xl glass-panel border border-slate-700 shadow-2xl">
             <h3 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-indigo-400" />
+              <MessageSquare className="w-4 h-4 text-amber-400" />
               Catatan Presensi Siswa
             </h3>
             <p className="text-xs text-slate-400 mb-3">
-              {activeNoteModal.nama} · NIS: {activeNoteModal.nis}
+              {activeNoteModal.nama} · NIS: <span className="font-mono text-amber-300">{activeNoteModal.nis}</span>
             </p>
 
             <textarea
@@ -561,7 +561,7 @@ export const AbsensiTab: React.FC<AbsensiTabProps> = ({
               value={tempNote}
               onChange={(e) => setTempNote(e.target.value)}
               placeholder="Contoh: Sakit demam berdarah / Mengikuti lomba LKS..."
-              className="w-full p-3 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500 mb-4"
+              className="w-full p-3 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500 mb-4 focus:border-amber-500 focus:ring-amber-500/30"
               autoFocus
             />
 
@@ -576,7 +576,7 @@ export const AbsensiTab: React.FC<AbsensiTabProps> = ({
               <button
                 type="button"
                 onClick={saveNote}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 transition cursor-pointer"
               >
                 Simpan Catatan
               </button>

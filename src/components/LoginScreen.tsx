@@ -170,7 +170,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             aria-label="Toggle Theme"
           >
             {theme === 'light' ? (
-              <Moon className="w-4 h-4 text-indigo-500" />
+              <Moon className="w-4 h-4 text-amber-500" />
             ) : (
               <Sun className="w-4 h-4 text-amber-400" />
             )}
@@ -186,14 +186,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               className="h-20 sm:h-24 w-auto object-contain drop-shadow-lg hover:scale-105 transition-transform duration-300"
             />
           </div>
-          <p className="text-[11px] sm:text-xs font-bold tracking-wider text-indigo-400 uppercase">
+          <p className="text-[11px] sm:text-xs font-bold tracking-wider text-amber-400 uppercase">
             SMKS PGRI 1 KOTA SUKABUMI
           </p>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-0.5">
-            Sistem Presensi Digital
+            Sistem Presensi Walas Digital
           </h1>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 font-medium">
-            <BadgeCheck className="w-3.5 h-3.5 text-indigo-400" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 font-medium">
+            <BadgeCheck className="w-3.5 h-3.5 text-amber-400" />
             <span>Login Khusus Wali Kelas & Super Admin</span>
           </div>
         </div>
@@ -226,7 +226,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="Masukkan NIP atau Email..."
                 autoComplete="username"
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500 font-mono focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500 font-mono focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/60 focus:outline-none"
               />
             </div>
           </div>
@@ -246,7 +246,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Masukkan kata sandi..."
                 autoComplete="current-password"
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/60 focus:outline-none"
               />
             </div>
           </div>
@@ -254,10 +254,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 rounded-xl font-semibold text-xs sm:text-sm text-white bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 touch-manipulation mt-3"
+            className="w-full h-11 rounded-xl font-bold text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-400 active:scale-[0.98] transition shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 touch-manipulation mt-3"
           >
             {isLoading ? (
-              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span className="inline-block w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <LogIn className="w-4 h-4" />
@@ -269,7 +269,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         <div className="mt-6 pt-4 border-t border-slate-800/80 text-center">
           <p className="text-[11px] text-slate-500">
-            SMKS PGRI 1 Kota Sukabumi · Presensi Digital Terintegrasi Cloud
+            SMKS PGRI 1 Kota Sukabumi · Presensi Walas Digital Terintegrasi Cloud
           </p>
         </div>
 

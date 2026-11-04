@@ -57,7 +57,7 @@ export const LaporanTab: React.FC<LaporanTabProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-indigo-400" />
+              <FileText className="w-5 h-5 text-amber-400" />
               Laporan Presensi & Notifikasi WhatsApp
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -71,9 +71,9 @@ export const LaporanTab: React.FC<LaporanTabProps> = ({
               <button
                 type="button"
                 onClick={() => setReportType('harian')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                   reportType === 'harian'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -82,9 +82,9 @@ export const LaporanTab: React.FC<LaporanTabProps> = ({
               <button
                 type="button"
                 onClick={() => setReportType('bulanan')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                   reportType === 'bulanan'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -95,9 +95,9 @@ export const LaporanTab: React.FC<LaporanTabProps> = ({
             {/* Print Button */}
             <button
               onClick={handlePrint}
-              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 flex items-center gap-2 transition cursor-pointer active:scale-95"
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-md shadow-amber-500/20 flex items-center gap-2 transition cursor-pointer active:scale-95"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4 text-slate-950" />
               <span>Cetak / PDF</span>
             </button>
           </div>

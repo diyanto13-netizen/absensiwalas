@@ -411,8 +411,8 @@ export const RekapTab: React.FC<RekapTabProps> = ({
           
           {/* Period selector */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="p-2 sm:p-2.5 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
-              <Calendar className="w-5 h-5" />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/20">
+              <Calendar className="w-5 h-5 text-amber-400" />
             </div>
             <div>
               <label className="block text-[11px] font-medium text-slate-400 mb-0.5">

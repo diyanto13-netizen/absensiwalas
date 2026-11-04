@@ -505,32 +505,40 @@ export default function App() {
       
       {/* Background Decorative Gradients & Ambient Glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 no-print transition-opacity duration-700">
-        {theme === 'sunrise' ? (
+        {theme === 'emerald' ? (
           <>
-            {/* Palette Foto 1: Ocean Cyan, Golden Amber & Sunset Orange */}
-            <div className="absolute -top-32 -left-32 w-[30rem] h-[30rem] bg-cyan-500/18 rounded-full blur-[100px]" />
-            <div className="absolute top-1/4 -right-32 w-[32rem] h-[32rem] bg-amber-500/16 rounded-full blur-[110px]" />
-            <div className="absolute -bottom-36 left-1/4 w-[36rem] h-[36rem] bg-orange-600/15 rounded-full blur-[120px]" />
+            {/* Logo PGRI: Lingkaran Hijau Zamrud Inti */}
+            <div className="absolute -top-36 -left-36 w-[32rem] h-[32rem] bg-emerald-500/16 rounded-full blur-[110px]" />
+            <div className="absolute top-1/4 -right-32 w-[34rem] h-[34rem] bg-teal-500/14 rounded-full blur-[120px]" />
+            <div className="absolute -bottom-36 left-1/4 w-[36rem] h-[36rem] bg-emerald-600/15 rounded-full blur-[120px]" />
           </>
-        ) : theme === 'neon' ? (
+        ) : theme === 'crimson' ? (
           <>
-            {/* Palette Foto 2: Deep Indigo, Electric Violet & Neon Fuchsia */}
-            <div className="absolute -top-32 right-1/4 w-[32rem] h-[32rem] bg-indigo-600/16 rounded-full blur-[100px]" />
-            <div className="absolute top-1/3 -right-28 w-[34rem] h-[34rem] bg-purple-600/20 rounded-full blur-[110px]" />
-            <div className="absolute -bottom-32 -left-20 w-[36rem] h-[36rem] bg-pink-500/22 rounded-full blur-[120px]" />
+            {/* Logo PGRI: Nyala Api Obor Merah */}
+            <div className="absolute -top-36 -left-36 w-[32rem] h-[32rem] bg-rose-600/18 rounded-full blur-[110px]" />
+            <div className="absolute top-1/4 -right-32 w-[34rem] h-[34rem] bg-red-600/16 rounded-full blur-[120px]" />
+            <div className="absolute -bottom-36 left-1/4 w-[36rem] h-[36rem] bg-amber-600/14 rounded-full blur-[120px]" />
+          </>
+        ) : theme === 'sunrise' ? (
+          <>
+            {/* Sunrise Warm Amber */}
+            <div className="absolute -top-32 -left-32 w-[30rem] h-[30rem] bg-amber-500/18 rounded-full blur-[100px]" />
+            <div className="absolute top-1/4 -right-32 w-[32rem] h-[32rem] bg-orange-500/16 rounded-full blur-[110px]" />
+            <div className="absolute -bottom-36 left-1/4 w-[36rem] h-[36rem] bg-amber-600/15 rounded-full blur-[120px]" />
           </>
         ) : theme === 'light' ? (
           <>
-            <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-400/5 rounded-full blur-3xl" />
-            <div className="absolute top-1/3 -right-40 w-96 h-96 bg-amber-400/5 rounded-full blur-3xl" />
-            <div className="absolute -bottom-40 left-1/4 w-96 h-96 bg-indigo-400/5 rounded-full blur-3xl" />
+            {/* Mode Terang dengan Aksen Emas & Hijau */}
+            <div className="absolute -top-40 -left-40 w-96 h-96 bg-amber-400/8 rounded-full blur-3xl" />
+            <div className="absolute top-1/3 -right-40 w-96 h-96 bg-emerald-400/8 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 left-1/4 w-96 h-96 bg-orange-400/6 rounded-full blur-3xl" />
           </>
         ) : (
           <>
-            {/* Default Dark Slate */}
-            <div className="absolute -top-40 -left-40 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl" />
-            <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
-            <div className="absolute -bottom-40 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl" />
+            {/* Default: Emas Keemasan PGRI & Hijau Zamrud dari Logo SMK PGRI 1 */}
+            <div className="absolute -top-40 -left-40 w-[32rem] h-[32rem] bg-amber-500/14 rounded-full blur-[120px]" />
+            <div className="absolute top-1/3 -right-40 w-[32rem] h-[32rem] bg-emerald-500/10 rounded-full blur-[120px]" />
+            <div className="absolute -bottom-40 left-1/4 w-[36rem] h-[36rem] bg-amber-600/12 rounded-full blur-[120px]" />
           </>
         )}
       </div>
@@ -646,11 +654,11 @@ export default function App() {
           <footer className="w-full border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 no-print z-10 hidden md:block">
             <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
               <p>
-                Sistem Presensi Digital &copy; 2026 · <strong>SMKS PGRI 1 Kota Sukabumi</strong> · {config.kelas}
+                Sistem Presensi Walas Digital &copy; 2026 · <strong>SMKS PGRI 1 Kota Sukabumi</strong> · {config.kelas}
               </p>
               <div className="flex items-center gap-3 text-[11px] text-slate-400">
                 <span>
-                  Wali Kelas: <strong className="text-indigo-400 font-medium">{config.waliKelas}</strong>
+                  Wali Kelas: <strong className="text-amber-400 font-semibold">{config.waliKelas}</strong>
                   {config.nipWaliKelas ? ` (NIP: ${config.nipWaliKelas})` : ''}
                 </span>
                 <span className="text-slate-700">|</span>

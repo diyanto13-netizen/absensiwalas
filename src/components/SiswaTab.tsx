@@ -310,9 +310,9 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
 
             <button
               onClick={handleOpenAddModal}
-              className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 flex items-center gap-1.5 transition touch-manipulation cursor-pointer ml-auto sm:ml-0"
+              className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-md shadow-amber-500/20 flex items-center gap-1.5 transition touch-manipulation cursor-pointer ml-auto sm:ml-0"
             >
-              <UserPlus className="w-4 h-4" />
+              <UserPlus className="w-4 h-4 text-slate-950" />
               <span>Tambah Siswa</span>
             </button>
           </div>
@@ -328,7 +328,7 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari Nama, NIS, Domisili..."
-            className="w-full pl-9 pr-3.5 py-2 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500"
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl glass-input text-xs sm:text-sm text-white placeholder-slate-500 focus:border-amber-500 focus:ring-amber-500/30"
           />
         </div>
 
@@ -337,9 +337,9 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
           <div className="flex items-center gap-1">
             <button
               onClick={() => setFilterJK('ALL')}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 filterJK === 'ALL'
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-amber-500 text-slate-950 shadow-sm'
                   : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -370,14 +370,14 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
           <div className="flex items-center p-0.5 rounded-lg bg-slate-900 border border-slate-800">
             <button
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded-md transition ${viewMode === 'cards' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+              className={`p-1.5 rounded-md transition ${viewMode === 'cards' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400'}`}
               title="Tampilan Kartu"
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-md transition ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+              className={`p-1.5 rounded-md transition ${viewMode === 'table' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400'}`}
               title="Tampilan Tabel"
             >
               <LayoutList className="w-4 h-4" />
@@ -624,7 +624,7 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 shadow-md shadow-amber-500/20"
                 >
                   Simpan Siswa
                 </button>
@@ -702,7 +702,7 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
               <button
                 type="button"
                 onClick={handleApplyImport}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 shadow-md shadow-amber-500/20"
               >
                 Tambahkan ke Kelas
               </button>
@@ -929,9 +929,9 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
                   setIsTemplateModalOpen(false);
                   fileInputRef.current?.click();
                 }}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 flex items-center gap-1.5 transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 shadow-md shadow-amber-500/20 flex items-center gap-1.5 transition cursor-pointer"
               >
-                <Upload className="w-3.5 h-3.5" />
+                <Upload className="w-3.5 h-3.5 text-slate-950" />
                 <span>Pilih File Excel & Impor</span>
               </button>
             </div>

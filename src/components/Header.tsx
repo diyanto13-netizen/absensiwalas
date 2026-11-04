@@ -106,26 +106,26 @@ export const Header: React.FC<HeaderProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowClassDropdown(!showClassDropdown)}
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-200 shrink-0 cursor-pointer transition touch-manipulation"
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 shrink-0 cursor-pointer transition touch-manipulation"
                       title="Klik untuk beralih kelas rombel (Mode Super Admin)"
                     >
-                      <Layers className="w-3 h-3 text-indigo-400" />
+                      <Layers className="w-3 h-3 text-amber-400" />
                       <span>{currentRombel.nama}</span>
-                      <ChevronDown className="w-3 h-3 text-indigo-400" />
+                      <ChevronDown className="w-3 h-3 text-amber-400" />
                     </button>
 
                     {showClassDropdown && (
                       <div className="absolute left-0 mt-1.5 w-64 max-h-80 overflow-y-auto rounded-xl glass-panel border border-slate-700 shadow-2xl py-1.5 z-50 animate-in fade-in custom-scrollbar">
                         <div className="sticky top-0 bg-slate-950/95 backdrop-blur px-3 py-1.5 border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
                           <span>Pilih Rombel ({DEFAULT_ROMBELS.length} Rombel)</span>
-                          <span className="text-[9px] text-indigo-400">SMKS PGRI 1</span>
+                          <span className="text-[9px] text-amber-400 font-bold">SMKS PGRI 1</span>
                         </div>
 
                         {(['X', 'XI', 'XII'] as const).map((tingkat) => {
                           const rombelsInTingkat = DEFAULT_ROMBELS.filter((r) => r.tingkat === tingkat);
                           return (
                             <div key={tingkat} className="py-1">
-                              <div className="px-3 py-1 text-[10px] font-bold text-indigo-300/80 bg-slate-900/60 uppercase tracking-wider">
+                              <div className="px-3 py-1 text-[10px] font-bold text-amber-300/90 bg-slate-900/60 uppercase tracking-wider">
                                 Kelas {tingkat} ({rombelsInTingkat.length} Rombel)
                               </div>
                               {rombelsInTingkat.map((rombel) => {
@@ -139,14 +139,14 @@ export const Header: React.FC<HeaderProps> = ({
                                       setShowClassDropdown(false);
                                     }}
                                     className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between transition cursor-pointer ${
-                                      isAct ? 'bg-indigo-600/30 text-white font-bold' : 'text-slate-300 hover:bg-slate-800/80'
+                                      isAct ? 'bg-amber-500/20 text-amber-200 font-bold' : 'text-slate-300 hover:bg-slate-800/80'
                                     }`}
                                   >
                                     <div>
                                       <p className="font-semibold text-xs">{rombel.nama}</p>
                                       <p className="text-[10px] text-slate-400">{rombel.jurusan}</p>
                                     </div>
-                                    {isAct && <Check className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+                                    {isAct && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
                                   </button>
                                 );
                               })}
@@ -157,7 +157,7 @@ export const Header: React.FC<HeaderProps> = ({
                     )}
                   </div>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 shrink-0">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-amber-500/15 border border-amber-500/30 text-amber-300 shrink-0">
                     {user.assignedKelas || config.kelas}
                   </span>
                 )}
@@ -176,7 +176,7 @@ export const Header: React.FC<HeaderProps> = ({
             
             {/* Clock & Date */}
             <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
-              <Clock className="w-3.5 h-3.5 text-indigo-400" />
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
               <span>{currentTime}</span>
               <span className="text-slate-600">·</span>
               <span>{currentDate}</span>
@@ -209,14 +209,14 @@ export const Header: React.FC<HeaderProps> = ({
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs transition border cursor-pointer ${
                 isSyncing
                   ? 'bg-amber-950/40 border-amber-500/30 text-amber-300'
-                  : 'bg-indigo-950/40 hover:bg-indigo-900/50 border-indigo-500/30 text-indigo-300'
+                  : 'bg-amber-950/40 hover:bg-amber-900/50 border-amber-500/30 text-amber-300'
               }`}
               title="Status Cloud Firestore: Real-time Aktif. Klik untuk sinkronisasi ulang manual."
             >
               {isSyncing ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
               ) : (
-                <Cloud className="w-3.5 h-3.5 text-indigo-400" />
+                <Cloud className="w-3.5 h-3.5 text-amber-400" />
               )}
               <span className="hidden sm:inline text-[11px] font-medium">
                 {isSyncing ? 'Sinkronisasi...' : 'Cloud Aktif'}
@@ -233,7 +233,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label="Toggle Theme Mode"
             >
               {theme === 'light' ? (
-                <Moon className="w-3.5 h-3.5 text-indigo-500 transition-transform duration-300 -rotate-12" />
+                <Moon className="w-3.5 h-3.5 text-amber-500 transition-transform duration-300 -rotate-12" />
               ) : (
                 <Sun className="w-3.5 h-3.5 text-amber-400 transition-transform duration-300 hover:rotate-45" />
               )}
@@ -276,13 +276,13 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                    ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/20'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/70'
                 }`}
               >
-                <i className={`fa-solid ${item.icon} text-xs ${isActive ? 'text-white' : 'text-slate-400'}`}></i>
+                <i className={`fa-solid ${item.icon} text-xs ${isActive ? 'text-slate-950' : 'text-slate-400'}`}></i>
                 <span>{item.label}</span>
               </button>
             );

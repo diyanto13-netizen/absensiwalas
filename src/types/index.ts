@@ -94,4 +94,4 @@ export interface AuthUser {
 
 export type ActiveTab = 'absensi' | 'siswa' | 'rekap' | 'laporan' | 'pengaturan' | 'akun';
 
-export type ThemeMode = 'dark' | 'sunrise' | 'neon' | 'light';
+export type ThemeMode = 'dark' | 'emerald' | 'crimson' | 'sunrise' | 'light';

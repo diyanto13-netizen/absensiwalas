@@ -42,13 +42,81 @@
 }
 
 .glass-input:focus {
-  border-color: #6366f1;
+  border-color: #f59e0b;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
 }
 
 /* ========================================================
-   FOTO 1: SUNRISE HORIZON & OCEAN AMBER PALETTE
+   LOGO PGRI 1: HIJAU ZAMRUD (EMERALD GREEN)
+   Mencerminkan lingkaran tradisi PGRI & keteduhan pendidikan
+   ======================================================== */
+html.theme-emerald body {
+  background-color: #041d14;
+  color: #f1f5f9;
+}
+
+html.theme-emerald #root > div {
+  background-color: #041d14 !important;
+}
+
+html.theme-emerald .glass-panel {
+  background: rgba(6, 36, 26, 0.88);
+  border-color: rgba(16, 185, 129, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(2, 22, 16, 0.45);
+}
+
+html.theme-emerald .glass-card {
+  background: rgba(5, 30, 22, 0.75);
+  border-color: rgba(16, 185, 129, 0.14);
+}
+
+html.theme-emerald .glass-input {
+  background: rgba(4, 25, 18, 0.88);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+html.theme-emerald .glass-input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+}
+
+/* ========================================================
+   LOGO PGRI 2: MERAH SULUH OBOR (FLAME CRIMSON)
+   Mencerminkan nyala api obor semangat perjuangan guru PGRI
+   ======================================================== */
+html.theme-crimson body {
+  background-color: #1c0709;
+  color: #f1f5f9;
+}
+
+html.theme-crimson #root > div {
+  background-color: #1c0709 !important;
+}
+
+html.theme-crimson .glass-panel {
+  background: rgba(35, 12, 16, 0.88);
+  border-color: rgba(239, 68, 68, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(25, 5, 8, 0.45);
+}
+
+html.theme-crimson .glass-card {
+  background: rgba(28, 10, 13, 0.75);
+  border-color: rgba(239, 68, 68, 0.14);
+}
+
+html.theme-crimson .glass-input {
+  background: rgba(24, 7, 10, 0.88);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+html.theme-crimson .glass-input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+}
+
+/* ========================================================
+   FOTO 1: SUNRISE HORIZON & WARM AMBER PALETTE
    ======================================================== */
 html.theme-sunrise body {
   background-color: #06131f;
@@ -61,56 +129,23 @@ html.theme-sunrise #root > div {
 
 html.theme-sunrise .glass-panel {
   background: rgba(8, 22, 34, 0.88);
-  border-color: rgba(56, 189, 248, 0.16);
+  border-color: rgba(245, 158, 11, 0.18);
   box-shadow: 0 8px 32px 0 rgba(2, 20, 36, 0.4);
 }
 
 html.theme-sunrise .glass-card {
   background: rgba(6, 18, 30, 0.75);
-  border-color: rgba(56, 189, 248, 0.12);
+  border-color: rgba(245, 158, 11, 0.14);
 }
 
 html.theme-sunrise .glass-input {
   background: rgba(5, 15, 25, 0.88);
-  border-color: rgba(56, 189, 248, 0.18);
+  border-color: rgba(245, 158, 11, 0.2);
 }
 
 html.theme-sunrise .glass-input:focus {
-  border-color: #38bdf8;
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
-}
-
-/* ========================================================
-   FOTO 2: CYBER MIDNIGHT & NEON FUCHSIA PALETTE
-   ======================================================== */
-html.theme-neon body {
-  background-color: #070719;
-  color: #f1f5f9;
-}
-
-html.theme-neon #root > div {
-  background-color: #070719 !important;
-}
-
-html.theme-neon .glass-panel {
-  background: rgba(18, 14, 38, 0.88);
-  border-color: rgba(192, 132, 252, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(10, 5, 25, 0.5);
-}
-
-html.theme-neon .glass-card {
-  background: rgba(14, 10, 30, 0.75);
-  border-color: rgba(192, 132, 252, 0.14);
-}
-
-html.theme-neon .glass-input {
-  background: rgba(12, 8, 26, 0.88);
-  border-color: rgba(236, 72, 153, 0.22);
-}
-
-html.theme-neon .glass-input:focus {
-  border-color: #ec4899;
-  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.25);
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
 }
 
 /* ========================================================

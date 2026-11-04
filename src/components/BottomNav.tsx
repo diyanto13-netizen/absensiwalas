@@ -36,15 +36,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab, i
               onClick={() => setActiveTab(tab.id)}
               className={`flex flex-col items-center justify-center h-full py-1 transition-all touch-manipulation cursor-pointer relative ${
                 isActive
-                  ? 'text-indigo-400 font-semibold'
+                  ? 'text-amber-400 font-bold'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               {/* Active top glow indicator */}
               {isActive && (
-                <span className="absolute top-0 w-6 sm:w-8 h-0.5 bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full" />
+                <span className="absolute top-0 w-6 sm:w-8 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full shadow-sm shadow-amber-500/50" />
               )}
-              <div className={`p-1 rounded-xl transition-all ${isActive ? 'bg-indigo-500/15 scale-110' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${isActive ? 'bg-amber-500/15 scale-110 text-amber-400' : ''}`}>
                 {tab.icon}
               </div>
               <span className="text-[9px] sm:text-[10px] mt-0.5 tracking-tight truncate max-w-[54px] text-center">

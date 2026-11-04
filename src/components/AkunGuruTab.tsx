@@ -220,7 +220,7 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
       <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-slate-800 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/20">
               <Users className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
@@ -247,9 +247,9 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
 
             <button
               onClick={handleOpenCreateModal}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 flex items-center gap-2 transition cursor-pointer touch-manipulation"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-md shadow-amber-500/20 flex items-center gap-2 transition cursor-pointer touch-manipulation"
             >
-              <UserPlus className="w-4 h-4" />
+              <UserPlus className="w-4 h-4 text-slate-950" />
               <span>Buat Akun Wali Kelas</span>
             </button>
           </div>
@@ -383,9 +383,9 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
               <button
                 key={tingkat}
                 onClick={() => setSelectedTingkat(tingkat)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shrink-0 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 ${
                   selectedTingkat === tingkat
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
                     : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 border border-slate-800'
                 }`}
               >
