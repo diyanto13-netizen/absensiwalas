@@ -340,6 +340,7 @@ export function subscribeToStudents(
   onError?: (err: any) => void
 ): Unsubscribe {
   const path = 'siswa';
+  const targetNorm = targetKelasId.replace(/[- ]/g, '_').toLowerCase();
   return onSnapshot(
     collection(db, path),
     (snapshot) => {
@@ -350,9 +351,10 @@ export function subscribeToStudents(
       const list: Student[] = [];
       snapshot.forEach((docItem) => {
         const data = docItem.data();
-        const studentKelasId = data.kelasId || 'xii_tkj_2';
+        const rawKelas = data.kelasId || 'xii_tkj_2';
+        const studentNorm = rawKelas.replace(/[- ]/g, '_').toLowerCase();
 
-        if (targetKelasId === 'all' || studentKelasId === targetKelasId) {
+        if (targetKelasId === 'all' || studentNorm === targetNorm) {
           list.push({
             id: data.id || docItem.id,
             nis: String(data.nis || ''),
@@ -361,7 +363,7 @@ export function subscribeToStudents(
             noHpOrtu: String(data.noHpOrtu || ''),
             alamat: data.alamat || '',
             catatan: data.catatan || '',
-            kelasId: studentKelasId,
+            kelasId: targetKelasId === 'all' ? rawKelas : targetKelasId,
           });
         }
       });
@@ -443,15 +445,17 @@ export function subscribeToConfig(
  */
 export async function loadStudentsFromFirestore(targetKelasId: string = 'xii_tkj_2'): Promise<Student[] | null> {
   const path = 'siswa';
+  const targetNorm = targetKelasId.replace(/[- ]/g, '_').toLowerCase();
   try {
     const snap = await getDocs(collection(db, path));
     if (snap.empty) return null;
     const list: Student[] = [];
     snap.forEach((docItem) => {
       const data = docItem.data();
-      const studentKelasId = data.kelasId || 'xii_tkj_2';
+      const rawKelas = data.kelasId || 'xii_tkj_2';
+      const studentNorm = rawKelas.replace(/[- ]/g, '_').toLowerCase();
 
-      if (targetKelasId === 'all' || studentKelasId === targetKelasId) {
+      if (targetKelasId === 'all' || studentNorm === targetNorm) {
         list.push({
           id: data.id || docItem.id,
           nis: String(data.nis || ''),
@@ -460,7 +464,7 @@ export async function loadStudentsFromFirestore(targetKelasId: string = 'xii_tkj
           noHpOrtu: String(data.noHpOrtu || ''),
           alamat: data.alamat || '',
           catatan: data.catatan || '',
-          kelasId: studentKelasId,
+          kelasId: targetKelasId === 'all' ? rawKelas : targetKelasId,
         });
       }
     });
@@ -506,19 +510,65 @@ export async function loadAttendanceFromFirestore(targetKelasId: string = 'xii_t
  * Simpan / Sinkronkan Satu Siswa ke Cloud Firestore
  */
 export async function saveStudentToFirestore(student: Student, targetKelasId: string = 'xii_tkj_2'): Promise<void> {
+  const normKelas = (student.kelasId || targetKelasId).replace(/[- ]/g, '_').toLowerCase();
   const path = `siswa/${student.id}`;
   try {
     const payload = {
       id: student.id,
-      nis: student.nis,
-      nama: student.nama,
+      nis: student.nis.trim(),
+      nama: student.nama.trim(),
       jenisKelamin: student.jenisKelamin,
-      noHpOrtu: student.noHpOrtu,
+      noHpOrtu: student.noHpOrtu ? student.noHpOrtu.trim() : '081200000000',
       alamat: student.alamat || '',
       catatan: student.catatan || '',
-      kelasId: student.kelasId || targetKelasId,
+      kelasId: normKelas,
     };
     await setDoc(doc(db, 'siswa', student.id), payload, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+/**
+ * Simpan Banyak Siswa ke Cloud Firestore secara Atomik Menggunakan WriteBatch
+ * Opsi replaceExisting: menghapus data siswa lama dari rombel ini terlebih dahulu
+ */
+export async function saveStudentsBatchToFirestore(
+  students: Student[],
+  targetKelasId: string = 'xii_tkj_2',
+  replaceExisting: boolean = false
+): Promise<void> {
+  const normKelas = targetKelasId.replace(/[- ]/g, '_').toLowerCase();
+  const path = 'siswa';
+  try {
+    const batch = writeBatch(db);
+
+    if (replaceExisting) {
+      const snap = await getDocs(collection(db, path));
+      snap.docs.forEach((docItem) => {
+        const itemKelas = (docItem.data().kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
+        if (itemKelas === normKelas) {
+          batch.delete(docItem.ref);
+        }
+      });
+    }
+
+    students.forEach((student) => {
+      const docRef = doc(db, path, student.id);
+      const payload = {
+        id: student.id,
+        nis: student.nis.trim(),
+        nama: student.nama.trim(),
+        jenisKelamin: student.jenisKelamin,
+        noHpOrtu: student.noHpOrtu ? student.noHpOrtu.trim() : '081200000000',
+        alamat: student.alamat || '',
+        catatan: student.catatan || '',
+        kelasId: normKelas,
+      };
+      batch.set(docRef, payload, { merge: true });
+    });
+
+    await batch.commit();
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -541,6 +591,7 @@ export async function deleteStudentFromFirestore(studentId: string): Promise<voi
  */
 export async function deleteAllStudentsFromFirestore(targetKelasId: string = 'xii_tkj_2'): Promise<void> {
   const path = 'siswa';
+  const targetNorm = targetKelasId.replace(/[- ]/g, '_').toLowerCase();
   try {
     const snap = await getDocs(collection(db, path));
     if (snap.empty) return;
@@ -549,8 +600,8 @@ export async function deleteAllStudentsFromFirestore(targetKelasId: string = 'xi
     let count = 0;
     snap.docs.forEach((docItem) => {
       const data = docItem.data();
-      const kId = data.kelasId || 'xii_tkj_2';
-      if (targetKelasId === 'all' || kId === targetKelasId) {
+      const kId = (data.kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
+      if (targetKelasId === 'all' || kId === targetNorm) {
         batch.delete(docItem.ref);
         count++;
       }

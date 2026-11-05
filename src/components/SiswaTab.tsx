@@ -10,21 +10,31 @@ import { exportStudentsToExcel, parseStudentsFromExcel, downloadStudentTemplateE
 interface SiswaTabProps {
   students: Student[];
   onSaveStudents: (newStudents: Student[]) => void;
+  onImportStudents?: (newStudents: Student[], replaceExisting: boolean) => Promise<void> | void;
   onDeleteStudent?: (studentId: string) => void;
   onDeleteAllStudents?: () => Promise<void> | void;
   showToast: (title: string, message?: string, type?: 'success' | 'error' | 'info') => void;
+  activeKelasId?: string;
+  kelasName?: string;
 }
 
 export const SiswaTab: React.FC<SiswaTabProps> = ({
   students,
   onSaveStudents,
+  onImportStudents,
   onDeleteStudent,
   onDeleteAllStudents,
   showToast,
+  activeKelasId = 'xii_tkj_2',
+  kelasName,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterJK, setFilterJK] = useState<'ALL' | 'L' | 'P'>('ALL');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+
+  // Excel import options state
+  const [importMode, setImportMode] = useState<'replace' | 'append'>('replace');
+  const [isImporting, setIsImporting] = useState(false);
 
   // Modal State for Add / Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -195,7 +205,7 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
     if (!file) return;
 
     try {
-      const parsed = await parseStudentsFromExcel(file);
+      const parsed = await parseStudentsFromExcel(file, activeKelasId);
       if (parsed.length === 0) {
         showToast('File Kosong', 'Tidak ada data siswa yang valid dalam file Excel.', 'error');
       } else {
@@ -209,12 +219,30 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
   };
 
   // Konfirmasi Impor Excel Massal
-  const handleApplyImport = () => {
-    if (!importPreview) return;
-    const combined = [...students, ...importPreview];
-    onSaveStudents(combined);
-    showToast('Impor Berhasil!', `${importPreview.length} siswa baru berhasil ditambahkan.`, 'success');
-    setImportPreview(null);
+  const handleApplyImport = async () => {
+    if (!importPreview || importPreview.length === 0) return;
+    setIsImporting(true);
+    try {
+      if (onImportStudents) {
+        await onImportStudents(importPreview, importMode === 'replace');
+      } else {
+        const combined = importMode === 'replace' ? importPreview : [...students, ...importPreview];
+        onSaveStudents(combined);
+      }
+      showToast(
+        'Impor Berhasil!',
+        importMode === 'replace'
+          ? `${importPreview.length} siswa baru berhasil diimpor menggantikan data lama.`
+          : `${importPreview.length} siswa baru berhasil ditambahkan ke kelas.`,
+        'success'
+      );
+      setImportPreview(null);
+    } catch (err: any) {
+      console.error('Gagal menerapkan impor siswa:', err);
+      showToast('Gagal Impor', err.message || 'Terjadi kesalahan saat menyimpan data impor.', 'error');
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -664,48 +692,137 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
 
       {/* Excel Import Preview Modal */}
       {importPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-xl p-5 rounded-2xl glass-panel border border-slate-700 shadow-2xl">
-            <h3 className="text-sm font-bold text-white mb-2">
-              Pratinjau Impor Excel ({importPreview.length} Siswa)
-            </h3>
-            <div className="max-h-56 overflow-y-auto rounded-xl border border-slate-800 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-xl p-5 sm:p-6 rounded-2xl glass-panel border border-slate-700 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                  Pratinjau Impor Excel ({importPreview.length} Siswa)
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Target Rombel: <strong className="text-amber-300">{kelasName || activeKelasId}</strong>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => !isImporting && setImportPreview(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Mode Pemilihan Impor: Timpa vs Gabungkan */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-300">Pilih Metode Impor:</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <label
+                  onClick={() => setImportMode('replace')}
+                  className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition ${
+                    importMode === 'replace'
+                      ? 'bg-amber-500/10 border-amber-500/40 text-amber-200'
+                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="importMode"
+                    checked={importMode === 'replace'}
+                    onChange={() => setImportMode('replace')}
+                    className="mt-0.5 accent-amber-500"
+                  />
+                  <div className="text-xs">
+                    <p className="font-bold text-white">Gantikan Data Lama (Timpa)</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                      Hapus data siswa lama di rombel ini & isi dengan daftar dari Excel.
+                    </p>
+                  </div>
+                </label>
+
+                <label
+                  onClick={() => setImportMode('append')}
+                  className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition ${
+                    importMode === 'append'
+                      ? 'bg-amber-500/10 border-amber-500/40 text-amber-200'
+                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="importMode"
+                    checked={importMode === 'append'}
+                    onChange={() => setImportMode('append')}
+                    className="mt-0.5 accent-amber-500"
+                  />
+                  <div className="text-xs">
+                    <p className="font-bold text-white">Gabungkan Data</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                      Pertahankan data yang sudah ada dan tambahkan siswa baru di bawahnya.
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Table Preview */}
+            <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-800">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 sticky top-0 text-slate-400 font-semibold">
+                <thead className="bg-slate-900 sticky top-0 text-slate-400 font-semibold border-b border-slate-800">
                   <tr>
-                    <th className="py-2 px-3">No</th>
-                    <th className="py-2 px-3">NIS</th>
-                    <th className="py-2 px-3">Nama</th>
-                    <th className="py-2 px-3">L/P</th>
+                    <th className="py-2 px-3 w-10 text-center">No</th>
+                    <th className="py-2 px-3 w-24">NIS</th>
+                    <th className="py-2 px-3">Nama Lengkap</th>
+                    <th className="py-2 px-3 w-12 text-center">L/P</th>
+                    <th className="py-2 px-3">No HP Ortu</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-slate-800/70">
                   {importPreview.map((s, idx) => (
-                    <tr key={idx}>
-                      <td className="py-1.5 px-3">{idx + 1}</td>
-                      <td className="py-1.5 px-3 font-mono text-indigo-300">{s.nis}</td>
+                    <tr key={idx} className="hover:bg-slate-900/40">
+                      <td className="py-1.5 px-3 text-center text-slate-500 font-mono text-[11px]">{idx + 1}</td>
+                      <td className="py-1.5 px-3 font-mono text-indigo-300 font-semibold">{s.nis}</td>
                       <td className="py-1.5 px-3 font-medium text-white">{s.nama}</td>
-                      <td className="py-1.5 px-3">{s.jenisKelamin}</td>
+                      <td className="py-1.5 px-3 text-center text-slate-400">{s.jenisKelamin}</td>
+                      <td className="py-1.5 px-3 font-mono text-[11px] text-slate-400">{s.noHpOrtu}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setImportPreview(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 bg-slate-900 border border-slate-800"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleApplyImport}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 shadow-md shadow-amber-500/20"
-              >
-                Tambahkan ke Kelas
-              </button>
+
+            <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+              <span className="text-[11px] text-slate-400">
+                Total: <strong className="text-white">{importPreview.length} siswa</strong> siap disimpan
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setImportPreview(null)}
+                  disabled={isImporting}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyImport}
+                  disabled={isImporting}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-md shadow-amber-500/20 flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+                >
+                  {isImporting ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Menyimpan ke Cloud...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileCheck className="w-4 h-4 text-slate-950" />
+                      <span>{importMode === 'replace' ? 'Gantikan & Simpan ke Kelas' : 'Tambahkan ke Kelas'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

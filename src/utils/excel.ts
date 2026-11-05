@@ -213,7 +213,7 @@ export const parseStudentsFromExcel = async (file: File, defaultKelasId?: string
             noHpOrtu: noHp,
             alamat: alamat || undefined,
             catatan: catatan || undefined,
-            kelasId: defaultKelasId || 'xii-tkj-2',
+            kelasId: defaultKelasId ? defaultKelasId.replace(/[- ]/g, '_').toLowerCase() : 'xii_tkj_2',
           });
         });
 

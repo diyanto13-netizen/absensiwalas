@@ -10,16 +10,17 @@ const KEYS = {
 };
 
 export const getStoredStudents = (kelasId: string = 'xii_tkj_2'): Student[] => {
+  const normKelas = (kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
   try {
-    const raw = localStorage.getItem(`${KEYS.STUDENTS}_${kelasId}`);
+    const raw = localStorage.getItem(`${KEYS.STUDENTS}_${normKelas}`);
     if (!raw) {
       // Jika XII TKJ 2, gunakan data awal siswa
-      if (kelasId === 'xii_tkj_2') {
+      if (normKelas === 'xii_tkj_2') {
         const legacyRaw = localStorage.getItem('smk_pgri1_presensi_students_v1');
         if (legacyRaw) {
           return JSON.parse(legacyRaw);
         }
-        saveStudents(INITIAL_STUDENTS, kelasId);
+        saveStudents(INITIAL_STUDENTS, normKelas);
         return INITIAL_STUDENTS;
       }
       return [];
@@ -27,15 +28,16 @@ export const getStoredStudents = (kelasId: string = 'xii_tkj_2'): Student[] => {
     return JSON.parse(raw);
   } catch (e) {
     console.error('Error reading students from storage', e);
-    return kelasId === 'xii_tkj_2' ? INITIAL_STUDENTS : [];
+    return normKelas === 'xii_tkj_2' ? INITIAL_STUDENTS : [];
   }
 };
 
 export const saveStudents = (students: Student[], kelasId: string = 'xii_tkj_2'): void => {
+  const normKelas = (kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
   try {
-    localStorage.setItem(`${KEYS.STUDENTS}_${kelasId}`, JSON.stringify(students));
+    localStorage.setItem(`${KEYS.STUDENTS}_${normKelas}`, JSON.stringify(students));
     // Simpan juga ke key legacy untuk kompatibilitas jika xii_tkj_2
-    if (kelasId === 'xii_tkj_2') {
+    if (normKelas === 'xii_tkj_2') {
       localStorage.setItem('smk_pgri1_presensi_students_v1', JSON.stringify(students));
     }
   } catch (e) {
@@ -44,17 +46,18 @@ export const saveStudents = (students: Student[], kelasId: string = 'xii_tkj_2')
 };
 
 export const getStoredAttendance = (kelasId: string = 'xii_tkj_2'): Record<string, DailyAttendance> => {
+  const normKelas = (kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
   try {
-    const raw = localStorage.getItem(`${KEYS.ATTENDANCE}_${kelasId}`);
+    const raw = localStorage.getItem(`${KEYS.ATTENDANCE}_${normKelas}`);
     if (!raw) {
-      if (kelasId === 'xii_tkj_2') {
+      if (normKelas === 'xii_tkj_2') {
         const legacyRaw = localStorage.getItem('smk_pgri1_presensi_attendance_v1');
         if (legacyRaw) {
           return JSON.parse(legacyRaw);
         }
-        const students = getStoredStudents(kelasId);
+        const students = getStoredStudents(normKelas);
         const initial = generateInitialAttendanceData(students);
-        saveAttendanceData(initial, kelasId);
+        saveAttendanceData(initial, normKelas);
         return initial;
       }
       return {};
@@ -67,9 +70,10 @@ export const getStoredAttendance = (kelasId: string = 'xii_tkj_2'): Record<strin
 };
 
 export const saveAttendanceData = (data: Record<string, DailyAttendance>, kelasId: string = 'xii_tkj_2'): void => {
+  const normKelas = (kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
   try {
-    localStorage.setItem(`${KEYS.ATTENDANCE}_${kelasId}`, JSON.stringify(data));
-    if (kelasId === 'xii_tkj_2') {
+    localStorage.setItem(`${KEYS.ATTENDANCE}_${normKelas}`, JSON.stringify(data));
+    if (normKelas === 'xii_tkj_2') {
       localStorage.setItem('smk_pgri1_presensi_attendance_v1', JSON.stringify(data));
     }
   } catch (e) {
@@ -78,10 +82,11 @@ export const saveAttendanceData = (data: Record<string, DailyAttendance>, kelasI
 };
 
 export const getStoredConfig = (kelasId: string = 'xii_tkj_2'): ClassConfig => {
+  const normKelas = (kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
   try {
-    const raw = localStorage.getItem(`${KEYS.CONFIG}_${kelasId}`);
+    const raw = localStorage.getItem(`${KEYS.CONFIG}_${normKelas}`);
     if (!raw) {
-      if (kelasId === 'xii_tkj_2') {
+      if (normKelas === 'xii_tkj_2') {
         const legacyRaw = localStorage.getItem('smk_pgri1_presensi_config_v1');
         if (legacyRaw) return JSON.parse(legacyRaw);
       }
@@ -94,9 +99,10 @@ export const getStoredConfig = (kelasId: string = 'xii_tkj_2'): ClassConfig => {
 };
 
 export const saveConfig = (config: ClassConfig, kelasId: string = 'xii_tkj_2'): void => {
+  const normKelas = (kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
   try {
-    localStorage.setItem(`${KEYS.CONFIG}_${kelasId}`, JSON.stringify(config));
-    if (kelasId === 'xii_tkj_2') {
+    localStorage.setItem(`${KEYS.CONFIG}_${normKelas}`, JSON.stringify(config));
+    if (normKelas === 'xii_tkj_2') {
       localStorage.setItem('smk_pgri1_presensi_config_v1', JSON.stringify(config));
     }
   } catch (e) {

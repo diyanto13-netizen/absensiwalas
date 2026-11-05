@@ -14,7 +14,7 @@ import {
   getStoredAuth, saveAuth 
 } from './utils/storage';
 import { 
-  loadStudentsFromFirestore, saveStudentToFirestore, 
+  loadStudentsFromFirestore, saveStudentToFirestore, saveStudentsBatchToFirestore,
   loadAttendanceFromFirestore, saveAttendanceToFirestore, 
   saveConfigToFirestore, deleteStudentFromFirestore, deleteAllStudentsFromFirestore,
   subscribeToStudents, subscribeToAttendance, subscribeToConfig,
@@ -414,21 +414,52 @@ export default function App() {
 
   // Handler Simpan Master Siswa (Lokal + Cloud Firestore)
   const handleSaveStudents = async (newStudents: Student[]) => {
+    const normKelas = activeKelasId.replace(/[- ]/g, '_').toLowerCase();
     const taggedStudents = newStudents.map((s) => ({
       ...s,
-      kelasId: s.kelasId || activeKelasId,
+      kelasId: normKelas,
     }));
 
     setStudents(taggedStudents);
-    saveStudents(taggedStudents, activeKelasId);
+    saveStudents(taggedStudents, normKelas);
 
-    // Simpan ke Cloud Firestore
+    // Simpan ke Cloud Firestore menggunakan Batch Write
     try {
-      for (const student of taggedStudents) {
-        await saveStudentToFirestore(student, activeKelasId);
-      }
+      await saveStudentsBatchToFirestore(taggedStudents, normKelas, false);
     } catch (e) {
-      console.warn('Data siswa tersimpan di cache lokal.');
+      console.warn('Data siswa tersimpan di cache lokal:', e);
+    }
+  };
+
+  // Handler Impor Siswa Massal (Excel)
+  const handleImportStudents = async (newStudents: Student[], replaceExisting: boolean) => {
+    const normKelas = activeKelasId.replace(/[- ]/g, '_').toLowerCase();
+    const taggedStudents = newStudents.map((s) => ({
+      ...s,
+      kelasId: normKelas,
+    }));
+
+    const finalStudents = replaceExisting ? taggedStudents : [...students, ...taggedStudents];
+
+    // Simpan segera ke state dan LocalStorage
+    setStudents(finalStudents);
+    saveStudents(finalStudents, normKelas);
+
+    // Simpan ke Cloud Firestore secara atomik menggunakan batch write
+    try {
+      await saveStudentsBatchToFirestore(taggedStudents, normKelas, replaceExisting);
+      showToast(
+        'Sinkronisasi Cloud Berhasil',
+        `${taggedStudents.length} data siswa berhasil disimpan permanen ke Cloud Firestore.`,
+        'success'
+      );
+    } catch (e) {
+      console.warn('Gagal sinkronisasi batch siswa ke Firestore:', e);
+      showToast(
+        'Tersimpan di Perangkat',
+        'Data siswa tersimpan di penyimpanan lokal dan akan tersinkron otomatis saat terhubung.',
+        'info'
+      );
     }
   };
 
@@ -589,9 +620,12 @@ export default function App() {
               <SiswaTab
                 students={students}
                 onSaveStudents={handleSaveStudents}
+                onImportStudents={handleImportStudents}
                 onDeleteStudent={handleDeleteStudent}
                 onDeleteAllStudents={handleDeleteAllStudents}
                 showToast={showToast}
+                activeKelasId={activeKelasId}
+                kelasName={config.kelas}
               />
             )}
 
