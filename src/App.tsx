@@ -36,6 +36,7 @@ import { RekapTab } from './components/RekapTab';
 import { LaporanTab } from './components/LaporanTab';
 import { PengaturanTab } from './components/PengaturanTab';
 import { AkunGuruTab } from './components/AkunGuruTab';
+import { PanduanTab } from './components/PanduanTab';
 import { Toast, ToastMessage } from './components/Toast';
 
 export default function App() {
@@ -431,7 +432,7 @@ export default function App() {
     }
   };
 
-  // Handler Impor Siswa Massal (Excel)
+  // Handler Impor Siswa Massal (Excel) dengan Proteksi Anti-Duplikasi NIS
   const handleImportStudents = async (newStudents: Student[], replaceExisting: boolean) => {
     const normKelas = activeKelasId.replace(/[- ]/g, '_').toLowerCase();
     const taggedStudents = newStudents.map((s) => ({
@@ -439,7 +440,40 @@ export default function App() {
       kelasId: normKelas,
     }));
 
-    const finalStudents = replaceExisting ? taggedStudents : [...students, ...taggedStudents];
+    let finalStudents: Student[] = [];
+    let batchToSave: Student[] = [];
+
+    if (replaceExisting) {
+      // Deduplikasi internal jika di dalam file Excel terdapat NIS ganda
+      const uniqueByNis = new Map<string, Student>();
+      taggedStudents.forEach((s) => {
+        uniqueByNis.set(s.nis.trim(), s);
+      });
+      finalStudents = Array.from(uniqueByNis.values());
+      batchToSave = finalStudents;
+    } else {
+      // Mode Gabungkan: jika NIS sudah ada di kelas ini, perbarui datanya dengan mempertahankan ID asli
+      // agar riwayat presensi siswa tersebut tetap terhubung dan tidak terjadi data ganda.
+      const mergedMap = new Map<string, Student>();
+      students.forEach((existing) => {
+        mergedMap.set(existing.nis.trim(), existing);
+      });
+      taggedStudents.forEach((incoming) => {
+        const key = incoming.nis.trim();
+        const prev = mergedMap.get(key);
+        if (prev) {
+          mergedMap.set(key, {
+            ...incoming,
+            id: prev.id,
+            kelasId: normKelas,
+          });
+        } else {
+          mergedMap.set(key, incoming);
+        }
+      });
+      finalStudents = Array.from(mergedMap.values());
+      batchToSave = finalStudents;
+    }
 
     // Simpan segera ke state dan LocalStorage
     setStudents(finalStudents);
@@ -447,10 +481,10 @@ export default function App() {
 
     // Simpan ke Cloud Firestore secara atomik menggunakan batch write
     try {
-      await saveStudentsBatchToFirestore(taggedStudents, normKelas, replaceExisting);
+      await saveStudentsBatchToFirestore(batchToSave, normKelas, replaceExisting);
       showToast(
         'Sinkronisasi Cloud Berhasil',
-        `${taggedStudents.length} data siswa berhasil disimpan permanen ke Cloud Firestore.`,
+        `${batchToSave.length} data siswa berhasil disimpan permanen ke Cloud Firestore.`,
         'success'
       );
     } catch (e) {
@@ -673,6 +707,16 @@ export default function App() {
                 theme={theme}
                 onToggleTheme={handleToggleTheme}
                 onChangeTheme={handleChangeTheme}
+                activeKelasId={activeKelasId}
+              />
+            )}
+
+            {activeTab === 'panduan' && (
+              <PanduanTab
+                config={config}
+                isAdmin={user.role === 'admin'}
+                onNavigateTab={(tab) => setActiveTab(tab)}
+                totalStudents={students.length}
               />
             )}
           </main>

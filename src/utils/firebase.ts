@@ -387,21 +387,27 @@ export function subscribeToAttendance(
   onError?: (err: any) => void
 ): Unsubscribe {
   const path = 'absensi';
+  const targetNorm = targetKelasId.replace(/[- ]/g, '_').toLowerCase();
   return onSnapshot(
     collection(db, path),
     (snapshot) => {
       const data: Record<string, DailyAttendance> = {};
       snapshot.forEach((docItem) => {
         const item = docItem.data();
-        const docKelasId = item.kelasId || 'xii_tkj_2';
+        const rawKelas = item.kelasId || 'xii_tkj_2';
+        const docNorm = rawKelas.replace(/[- ]/g, '_').toLowerCase();
 
-        if (targetKelasId === 'all' || docKelasId === targetKelasId) {
-          data[docItem.id] = {
-            date: item.date || docItem.id,
+        if (targetKelasId === 'all' || docNorm === targetNorm) {
+          // Gunakan tanggal murni YYYY-MM-DD sebagai kunci objek agar semua komponen (Absensi, Rekap, Laporan)
+          // dapat membaca presensi pada ke-21 rombel tanpa konflik prefix kelasId.
+          const cleanDate = item.date || docItem.id.replace(`${docNorm}_`, '');
+          const mapKey = targetKelasId === 'all' ? `${docNorm}_${cleanDate}` : cleanDate;
+          data[mapKey] = {
+            date: cleanDate,
             records: item.records || {},
             updatedAt: item.updatedAt || new Date().toISOString(),
             updatedBy: item.updatedBy || 'Wali Kelas',
-            kelasId: docKelasId,
+            kelasId: docNorm,
           };
         }
       });
@@ -423,7 +429,8 @@ export function subscribeToConfig(
   kelasId: string = 'xii_tkj_2',
   onError?: (err: any) => void
 ): Unsubscribe {
-  const configDocId = `kelas_${kelasId}`;
+  const normKelas = (kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
+  const configDocId = `kelas_${normKelas}`;
   const path = `pengaturan/${configDocId}`;
   return onSnapshot(
     doc(db, 'pengaturan', configDocId),
@@ -464,7 +471,7 @@ export async function loadStudentsFromFirestore(targetKelasId: string = 'xii_tkj
           noHpOrtu: String(data.noHpOrtu || ''),
           alamat: data.alamat || '',
           catatan: data.catatan || '',
-          kelasId: targetKelasId === 'all' ? rawKelas : targetKelasId,
+          kelasId: targetKelasId === 'all' ? rawKelas : targetNorm,
         });
       }
     });
@@ -481,21 +488,25 @@ export async function loadStudentsFromFirestore(targetKelasId: string = 'xii_tkj
  */
 export async function loadAttendanceFromFirestore(targetKelasId: string = 'xii_tkj_2'): Promise<Record<string, DailyAttendance> | null> {
   const path = 'absensi';
+  const targetNorm = targetKelasId.replace(/[- ]/g, '_').toLowerCase();
   try {
     const snap = await getDocs(collection(db, path));
     if (snap.empty) return null;
     const data: Record<string, DailyAttendance> = {};
     snap.forEach((docItem) => {
       const item = docItem.data();
-      const docKelasId = item.kelasId || 'xii_tkj_2';
+      const rawKelas = item.kelasId || 'xii_tkj_2';
+      const docNorm = rawKelas.replace(/[- ]/g, '_').toLowerCase();
 
-      if (targetKelasId === 'all' || docKelasId === targetKelasId) {
-        data[docItem.id] = {
-          date: item.date || docItem.id,
+      if (targetKelasId === 'all' || docNorm === targetNorm) {
+        const cleanDate = item.date || docItem.id.replace(`${docNorm}_`, '');
+        const mapKey = targetKelasId === 'all' ? `${docNorm}_${cleanDate}` : cleanDate;
+        data[mapKey] = {
+          date: cleanDate,
           records: item.records || {},
           updatedAt: item.updatedAt || new Date().toISOString(),
           updatedBy: item.updatedBy || 'Wali Kelas',
-          kelasId: docKelasId,
+          kelasId: docNorm,
         };
       }
     });
@@ -622,9 +633,10 @@ export async function saveAttendanceToFirestore(
   dailyAttendance: DailyAttendance, 
   targetKelasId: string = 'xii_tkj_2'
 ): Promise<void> {
-  const docId = targetKelasId === 'xii_tkj_2' 
+  const normKelas = (targetKelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
+  const docId = normKelas === 'xii_tkj_2' 
     ? dailyAttendance.date 
-    : `${targetKelasId}_${dailyAttendance.date}`;
+    : `${normKelas}_${dailyAttendance.date}`;
     
   const path = `absensi/${docId}`;
   try {
@@ -643,7 +655,7 @@ export async function saveAttendanceToFirestore(
       records: cleanRecords,
       updatedAt: dailyAttendance.updatedAt || new Date().toISOString(),
       updatedBy: dailyAttendance.updatedBy || 'Wali Kelas',
-      kelasId: targetKelasId,
+      kelasId: normKelas,
     };
 
     await setDoc(doc(db, 'absensi', docId), payload, { merge: true });
@@ -656,7 +668,8 @@ export async function saveAttendanceToFirestore(
  * Simpan Konfigurasi Kelas ke Cloud Firestore
  */
 export async function saveConfigToFirestore(config: ClassConfig, kelasId: string = 'xii_tkj_2'): Promise<void> {
-  const configDocId = `kelas_${kelasId}`;
+  const normKelas = (kelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
+  const configDocId = `kelas_${normKelas}`;
   const path = `pengaturan/${configDocId}`;
   try {
     const payload = {

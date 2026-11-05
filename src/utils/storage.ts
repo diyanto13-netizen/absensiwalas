@@ -148,22 +148,13 @@ export const saveFirebaseConfig = (config: FirebaseConfigState): void => {
 
 export const getStoredAuth = (): AuthUser | null => {
   try {
-    const raw = localStorage.getItem(KEYS.AUTH);
+    // Hapus token auto-login lama di localStorage agar saat pertama kali buka aplikasi
+    // di tab/jendela baru selalu menampilkan Halaman Login terlebih dahulu.
+    localStorage.removeItem(KEYS.AUTH);
+    localStorage.removeItem('smk_pgri1_presensi_auth_v1');
+
+    const raw = sessionStorage.getItem('smk_pgri1_presensi_session_auth_v3');
     if (!raw) {
-      // Periksa auth v1 lama
-      const legacyRaw = localStorage.getItem('smk_pgri1_presensi_auth_v1');
-      if (legacyRaw) {
-        const legacy = JSON.parse(legacyRaw);
-        return {
-          username: legacy.username || 'walikelas',
-          nama: legacy.nama || 'Diyanto, S.Kom.',
-          nip: '198506122010011014',
-          role: 'wali_kelas',
-          assignedKelas: 'XII TKJ 2',
-          kelasId: 'xii_tkj_2',
-          isLoggedIn: true,
-        };
-      }
       return null;
     }
     return JSON.parse(raw);
@@ -174,11 +165,12 @@ export const getStoredAuth = (): AuthUser | null => {
 
 export const saveAuth = (auth: AuthUser | null): void => {
   try {
+    localStorage.removeItem(KEYS.AUTH);
+    localStorage.removeItem('smk_pgri1_presensi_auth_v1');
     if (auth) {
-      localStorage.setItem(KEYS.AUTH, JSON.stringify(auth));
+      sessionStorage.setItem('smk_pgri1_presensi_session_auth_v3', JSON.stringify(auth));
     } else {
-      localStorage.removeItem(KEYS.AUTH);
-      localStorage.removeItem('smk_pgri1_presensi_auth_v1');
+      sessionStorage.removeItem('smk_pgri1_presensi_session_auth_v3');
     }
   } catch (e) {
     console.error('Error saving auth state', e);

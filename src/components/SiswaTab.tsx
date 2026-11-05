@@ -142,15 +142,25 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
       onSaveStudents(updated);
       showToast('Siswa Diperbarui', `Data ${formData.nama} berhasil diperbarui.`, 'success');
     } else {
+      // Cek apakah NIS sudah ada di rombel ini agar tidak terjadi data tumpang tindih
+      const duplicateNis = students.find((s) => s.nis.trim() === formData.nis.trim());
+      if (duplicateNis) {
+        showToast('NIS Sudah Terdaftar', `NIS ${formData.nis.trim()} sudah digunakan oleh ${duplicateNis.nama}.`, 'error');
+        return;
+      }
+
+      const normKelas = (activeKelasId || 'xii_tkj_2').replace(/[- ]/g, '_').toLowerCase();
+      const cleanNis = formData.nis.trim().replace(/[^a-zA-Z0-9]/g, '');
       // Tambah Baru
       const newStudent: Student = {
-        id: `std-${Date.now()}`,
+        id: `std_${normKelas}_${cleanNis}_${Date.now()}`,
         nis: formData.nis.trim(),
         nama: formData.nama.trim(),
         jenisKelamin: formData.jenisKelamin,
         noHpOrtu: formData.noHpOrtu.trim() || '081200000000',
         alamat: formData.alamat.trim() || undefined,
         catatan: formData.catatan.trim() || undefined,
+        kelasId: normKelas,
       };
       onSaveStudents([...students, newStudent]);
       showToast('Siswa Ditambahkan', `${formData.nama} berhasil didaftarkan.`, 'success');
@@ -311,7 +321,7 @@ export const SiswaTab: React.FC<SiswaTabProps> = ({
             </button>
 
             <button
-              onClick={() => exportStudentsToExcel(students)}
+              onClick={() => exportStudentsToExcel(students, kelasName || activeKelasId)}
               className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 flex items-center gap-1.5 transition touch-manipulation cursor-pointer"
               title="Ekspor ke Excel"
             >

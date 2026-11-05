@@ -92,6 +92,6 @@ export interface AuthUser {
   email?: string;
 }
 
-export type ActiveTab = 'absensi' | 'siswa' | 'rekap' | 'laporan' | 'pengaturan' | 'akun';
+export type ActiveTab = 'absensi' | 'siswa' | 'rekap' | 'laporan' | 'pengaturan' | 'akun' | 'panduan';
 
 export type ThemeMode = 'dark' | 'emerald' | 'crimson' | 'sunrise' | 'light';

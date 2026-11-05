@@ -75,6 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
     }
 
     items.push({ id: 'pengaturan', label: 'Pengaturan', icon: 'fa-sliders' });
+    items.push({ id: 'panduan', label: 'Tutorial & Panduan', icon: 'fa-book-open' });
     return items;
   }, [user.role]);
 

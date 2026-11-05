@@ -20,6 +20,7 @@ interface PengaturanTabProps {
   theme?: ThemeMode;
   onToggleTheme?: () => void;
   onChangeTheme?: (theme: ThemeMode) => void;
+  activeKelasId?: string;
 }
 
 export const PengaturanTab: React.FC<PengaturanTabProps> = ({
@@ -34,10 +35,16 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
   theme = 'dark',
   onToggleTheme,
   onChangeTheme,
+  activeKelasId = 'xii_tkj_2',
 }) => {
   const [localConfig, setLocalConfig] = useState<ClassConfig>(config);
   const [localFirebase, setLocalFirebase] = useState<FirebaseConfigState>(firebaseConfig);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const restoreFileRef = useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    setLocalConfig(config);
+  }, [config]);
 
   const handleSaveClassConfig = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,12 +83,11 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
 
   // Reset ke awal
   const handleResetToDefault = () => {
-    if (confirm('Apakah Anda yakin ingin mereset seluruh data kembali ke kondisi default SMK PGRI 1?')) {
-      const initialAttendance = generateInitialAttendanceData(INITIAL_STUDENTS);
-      onRestoreData(INITIAL_STUDENTS, initialAttendance, INITIAL_CLASS_CONFIG);
-      setLocalConfig(INITIAL_CLASS_CONFIG);
-      showToast('Reset Selesai', 'Sistem dikembalikan ke data awal kelas XII TKJ 2.', 'info');
-    }
+    const initialAttendance = generateInitialAttendanceData(INITIAL_STUDENTS);
+    onRestoreData(INITIAL_STUDENTS, initialAttendance, INITIAL_CLASS_CONFIG);
+    setLocalConfig(INITIAL_CLASS_CONFIG);
+    setShowResetConfirm(false);
+    showToast('Reset Selesai', 'Sistem dikembalikan ke data awal kelas XII TKJ 2.', 'info');
   };
 
   return (
@@ -449,11 +455,11 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
-                onClick={() => exportBackupJSON()}
+                onClick={() => exportBackupJSON(activeKelasId)}
                 className="flex-1 h-10 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 flex items-center justify-center gap-2 transition cursor-pointer touch-manipulation"
               >
                 <Download className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Unduh JSON</span>
+                <span>Unduh JSON ({config.kelas})</span>
               </button>
 
               <input
@@ -474,16 +480,35 @@ export const PengaturanTab: React.FC<PengaturanTabProps> = ({
               </button>
             </div>
 
-            <div className="mt-3.5 pt-3.5 border-t border-slate-800 flex items-center justify-between">
-              <span className="text-[11px] text-slate-400">Kembalikan data default:</span>
-              <button
-                type="button"
-                onClick={handleResetToDefault}
-                className="px-2.5 py-1 rounded-lg text-xs font-medium text-rose-300 hover:text-white bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/20 flex items-center gap-1 transition cursor-pointer"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>Reset Awal</span>
-              </button>
+            <div className="mt-3.5 pt-3.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-[11px] text-slate-400">Kembalikan data contoh:</span>
+              {showResetConfirm ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowResetConfirm(false)}
+                    className="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetToDefault}
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 transition cursor-pointer"
+                  >
+                    Ya, Reset Sekarang
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowResetConfirm(true)}
+                  className="px-2.5 py-1 rounded-lg text-xs font-medium text-rose-300 hover:text-white bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/20 flex items-center gap-1 transition cursor-pointer"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset Awal</span>
+                </button>
+              )}
             </div>
           </div>
 

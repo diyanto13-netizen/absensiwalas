@@ -205,15 +205,18 @@ export const parseStudentsFromExcel = async (file: File, defaultKelasId?: string
           const alamat = String(row['Alamat / Domisili'] || row['Alamat'] || row['alamat'] || '').trim();
           const catatan = String(row['Catatan Khusus'] || row['Catatan'] || row['catatan'] || '').trim();
 
+          const normKelas = defaultKelasId ? defaultKelasId.replace(/[- ]/g, '_').toLowerCase() : 'xii_tkj_2';
+          const cleanNis = nis.replace(/[^a-zA-Z0-9]/g, '') || `${1000 + idx}`;
+
           parsedStudents.push({
-            id: `std-imp-${Date.now()}-${idx}`,
+            id: `std_${normKelas}_${cleanNis}_${Date.now()}_${idx}`,
             nis,
             nama: String(nama).trim(),
             jenisKelamin,
             noHpOrtu: noHp,
             alamat: alamat || undefined,
             catatan: catatan || undefined,
-            kelasId: defaultKelasId ? defaultKelasId.replace(/[- ]/g, '_').toLowerCase() : 'xii_tkj_2',
+            kelasId: normKelas,
           });
         });
 

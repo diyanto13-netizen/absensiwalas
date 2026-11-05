@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClipboardCheck, Users, BarChart3, FileText, Settings, UserCheck } from 'lucide-react';
+import { ClipboardCheck, Users, BarChart3, FileText, Settings, UserCheck, BookOpen } from 'lucide-react';
 import { ActiveTab } from '../types';
 
 interface BottomNavProps {
@@ -22,12 +22,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab, i
     }
 
     items.push({ id: 'pengaturan', label: 'Setelan', icon: <Settings className="w-4 h-4 sm:w-5 sm:h-5" /> });
+    items.push({ id: 'panduan', label: 'Tutorial', icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" /> });
     return items;
   }, [isAdmin]);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 safe-bottom shadow-2xl no-print">
-      <div className={`grid ${tabs.length === 6 ? 'grid-cols-6' : 'grid-cols-5'} h-16 items-center px-0.5`}>
+      <div className={`grid ${tabs.length === 7 ? 'grid-cols-7' : 'grid-cols-6'} h-16 items-center px-0.5`}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (

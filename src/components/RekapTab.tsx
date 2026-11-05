@@ -88,10 +88,10 @@ export const RekapTab: React.FC<RekapTabProps> = ({
     totalAlpaMonth += alpa;
   });
 
-  const totalRecordEntries = totalHadirMonth + totalSakitMonth + totalIzinMonth + totalAlpaMonth || 1;
-  const overallRate = Math.round((totalHadirMonth / totalRecordEntries) * 100);
+  const totalRecordEntries = totalHadirMonth + totalSakitMonth + totalIzinMonth + totalAlpaMonth;
+  const overallRate = totalRecordEntries > 0 ? Math.round((totalHadirMonth / totalRecordEntries) * 100) : 0;
 
-  // Kalkulasi Tren Persentase Kehadiran 6 Bulan Terakhir
+  // Kalkulasi Tren Persentase Kehadiran 6 Bulan Terakhir (100% Data Riil)
   const last6MonthsData = useMemo(() => {
     const result: { label: string; year: number; month: number; rate: number; count: number }[] = [];
     
@@ -117,14 +117,7 @@ export const RekapTab: React.FC<RekapTabProps> = ({
         });
       });
       
-      let rate = 95;
-      if (totalEntries > 0) {
-        rate = Math.round((hadir / totalEntries) * 100);
-      } else {
-        // Fallback default variasi realistis jika bulan lampau belum diisi
-        const realisticTrends = [94, 93, 98, 96, 94, 95];
-        rate = realisticTrends[5 - i] || 95;
-      }
+      const rate = totalEntries > 0 ? Math.round((hadir / totalEntries) * 100) : 0;
       
       result.push({
         label: `${monthNames[m - 1].substring(0, 3)} ${y}`,
@@ -137,21 +130,24 @@ export const RekapTab: React.FC<RekapTabProps> = ({
     return result;
   }, [selectedYear, selectedMonth, attendanceData, students]);
 
-  // Statistik ringkas 6 bulan
+  // Statistik ringkas 6 bulan (dihitung murni dari bulan yang memiliki data presensi riil)
   const sixMonthAverage = useMemo(() => {
-    if (last6MonthsData.length === 0) return 0;
-    const sum = last6MonthsData.reduce((acc, curr) => acc + curr.rate, 0);
-    return (sum / last6MonthsData.length).toFixed(1);
+    const activeMonths = last6MonthsData.filter((m) => m.count > 0);
+    if (activeMonths.length === 0) return '0.0';
+    const sum = activeMonths.reduce((acc, curr) => acc + curr.rate, 0);
+    return (sum / activeMonths.length).toFixed(1);
   }, [last6MonthsData]);
 
   const maxRateMonth = useMemo(() => {
-    if (last6MonthsData.length === 0) return null;
-    return last6MonthsData.reduce((prev, current) => (prev.rate > current.rate ? prev : current));
+    const activeMonths = last6MonthsData.filter((m) => m.count > 0);
+    if (activeMonths.length === 0) return null;
+    return activeMonths.reduce((prev, current) => (prev.rate > current.rate ? prev : current));
   }, [last6MonthsData]);
 
   const minRateMonth = useMemo(() => {
-    if (last6MonthsData.length === 0) return null;
-    return last6MonthsData.reduce((prev, current) => (prev.rate < current.rate ? prev : current));
+    const activeMonths = last6MonthsData.filter((m) => m.count > 0);
+    if (activeMonths.length === 0) return null;
+    return activeMonths.reduce((prev, current) => (prev.rate < current.rate ? prev : current));
   }, [last6MonthsData]);
 
   // Inisialisasi Chart.js untuk Line Chart, Pie Chart & Bar Chart
@@ -211,7 +207,7 @@ export const RekapTab: React.FC<RekapTabProps> = ({
                 ticks: { color: '#cbd5e1', font: { family: 'Plus Jakarta Sans', size: 12, weight: 600 } },
               },
               y: {
-                min: 70,
+                min: 0,
                 max: 100,
                 grid: { color: 'rgba(255, 255, 255, 0.06)' },
                 ticks: {
