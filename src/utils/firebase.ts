@@ -14,8 +14,8 @@ import {
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Student, DailyAttendance, ClassConfig, TeacherProfile, SuperAdminConfig } from '../types';
-import { DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN } from '../data/initialData';
-import { getStoredTeachers, saveTeachers, getStoredSuperAdmin, saveStoredSuperAdmin } from './storage';
+import { DEFAULT_SUPER_ADMIN } from '../data/initialData';
+import { getStoredTeachers, saveTeachers, clearAllStoredTeachers, getStoredSuperAdmin, saveStoredSuperAdmin } from './storage';
 
 // Inisialisasi Firebase App
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
@@ -91,8 +91,8 @@ export async function testConnection(): Promise<boolean> {
 testConnection();
 
 /**
- * Inisialisasi / Seed data master akun Wali Kelas
- * Memprioritaskan penyimpanan lokal dan menyelaraskan dengan Firestore jika tersedia
+ * Inisialisasi data master akun Wali Kelas (Murni Data Riil)
+ * Hanya memuat data yang diinput oleh Super Admin
  */
 export async function initializeDefaultTeachers(): Promise<TeacherProfile[]> {
   const localTeachers = getStoredTeachers();
@@ -102,25 +102,19 @@ export async function initializeDefaultTeachers(): Promise<TeacherProfile[]> {
     if (!snap.empty) {
       const teachers: TeacherProfile[] = [];
       snap.forEach((d) => {
-        const item = d.data() as TeacherProfile;
-        teachers.push({ ...item, id: d.id });
+        if (d.id !== 'admin-kurikulum') {
+          const item = d.data() as TeacherProfile;
+          teachers.push({ ...item, id: d.id });
+        }
       });
-      // Gabungkan data cloud dengan local storage agar akun yang baru dibuat tidak hilang
-      const localMap = new Map(localTeachers.map((t) => [t.id || t.nip, t]));
-      teachers.forEach((t) => localMap.set(t.id || t.nip, t));
-      const merged = Array.from(localMap.values());
-      saveTeachers(merged);
-      return merged;
-    }
-
-    // Seed default teachers jika cloud kosong
-    for (const t of localTeachers) {
-      const safeId = (t.id || `teacher-${t.nip}`).replace(/[^a-zA-Z0-9_-]/g, '_');
-      await setDoc(doc(db, path, safeId), { ...t, id: safeId }, { merge: true });
+      // Jika ada data di cloud, sinkronkan ke local storage
+      if (teachers.length > 0) {
+        saveTeachers(teachers);
+        return teachers;
+      }
     }
     return localTeachers;
   } catch (err) {
-    console.warn('Menggunakan data akun wali kelas dari penyimpanan lokal (Firestore offline/quota limit):', err);
     return localTeachers;
   }
 }
@@ -239,6 +233,27 @@ export async function deleteTeacherFromFirestore(teacherId: string): Promise<voi
     await deleteDoc(doc(db, 'wali_kelas', safeDocId));
   } catch (error) {
     console.warn('Peringatan: Akun dihapus dari lokal, penghapusan cloud tertunda:', error);
+  }
+}
+
+/**
+ * Kosongkan Seluruh Data Wali Kelas dari Penyimpanan Lokal & Cloud Firestore
+ */
+export async function clearAllTeachers(): Promise<void> {
+  // 1. Kosongkan dari LocalStorage
+  clearAllStoredTeachers();
+  saveTeachers([]);
+
+  // 2. Kosongkan dari Firestore jika kuota/koneksi aktif
+  try {
+    const snap = await getDocs(collection(db, 'wali_kelas'));
+    for (const d of snap.docs) {
+      if (d.id !== 'admin-kurikulum') {
+        await deleteDoc(d.ref);
+      }
+    }
+  } catch (e) {
+    console.warn('Pembersihan cloud tertunda:', e);
   }
 }
 
@@ -422,22 +437,6 @@ export async function findTeacherByNipOrIdentifier(identifier: string): Promise<
   } catch (e) {
     console.warn('Pencarian guru Firestore offline/quota limit, menggunakan database lokal:', e);
   }
-
-  // 4. Fallback ke DEFAULT_TEACHERS
-  const defaultMatch = DEFAULT_TEACHERS.find((t) => {
-    const cleanNip = t.nip.toLowerCase().replace(/[\s-]/g, '');
-    const cleanEmail = t.email.toLowerCase();
-    const emailPrefix = cleanEmail.split('@')[0];
-    return (
-      cleanNip === clean ||
-      cleanEmail === clean ||
-      emailPrefix === clean ||
-      cleanEmail.startsWith(clean) ||
-      clean.startsWith(emailPrefix)
-    );
-  });
-
-  if (defaultMatch) return defaultMatch;
 
   return null;
 }

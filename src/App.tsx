@@ -21,14 +21,14 @@ import {
   saveConfigToFirestore, deleteStudentFromFirestore, deleteAllStudentsFromFirestore,
   subscribeToStudents, subscribeToAttendance, subscribeToConfig,
   initializeDefaultTeachers, subscribeToTeachers, saveTeacherToFirestore, deleteTeacherFromFirestore,
-  subscribeToSuperAdminConfig, saveSuperAdminConfigToFirestore
+  clearAllTeachers, subscribeToSuperAdminConfig, saveSuperAdminConfigToFirestore
 } from './utils/firebase';
 import { 
   Student, DailyAttendance, ClassConfig, FirebaseConfigState, 
   AuthUser, ActiveTab, TeacherProfile, SuperAdminConfig, ThemeMode 
 } from './types';
 import { getStoredTheme, applyTheme } from './utils/theme';
-import { DEFAULT_ROMBELS, DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN, ALL_SMK_PGRI_1_ROMBELS } from './data/initialData';
+import { DEFAULT_ROMBELS, DEFAULT_SUPER_ADMIN, ALL_SMK_PGRI_1_ROMBELS } from './data/initialData';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { LoginScreen } from './components/LoginScreen';
@@ -341,6 +341,12 @@ export default function App() {
       saveTeachers(updated);
       return updated;
     });
+  };
+
+  // Handler Kosongkan Seluruh Akun Wali Kelas
+  const handleClearAllTeachers = async () => {
+    await clearAllTeachers();
+    setTeachers([]);
   };
 
   // Handler Ganti Akun Super Admin
@@ -700,6 +706,7 @@ export default function App() {
                 superAdminConfig={superAdminConfig}
                 onSaveTeacher={handleSaveTeacher}
                 onDeleteTeacher={handleDeleteTeacher}
+                onClearAllTeachers={handleClearAllTeachers}
                 onSaveSuperAdminConfig={handleSaveSuperAdminConfig}
                 showToast={showToast}
               />

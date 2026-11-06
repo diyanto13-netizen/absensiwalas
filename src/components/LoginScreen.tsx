@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LogIn, ShieldCheck, Lock, User, BadgeCheck, Sun, Moon } from 'lucide-react';
 import { AuthUser, TeacherProfile, SuperAdminConfig, ThemeMode } from '../types';
-import { DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN } from '../data/initialData';
+import { DEFAULT_SUPER_ADMIN } from '../data/initialData';
 import { findTeacherByNipOrIdentifier, subscribeToTeachers, subscribeToSuperAdminConfig } from '../utils/firebase';
 import { getStoredTeachers, getStoredSuperAdmin } from '../utils/storage';
 
@@ -97,20 +97,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
       // 2. Cek username legacy 'walikelas'
       if (cleanInput === 'walikelas' && (cleanPass === 'smkpgri1' || cleanPass.length >= 6)) {
-        const defaultTeacher = teachersList[0] || DEFAULT_TEACHERS[0];
-        const user: AuthUser = {
-          username: defaultTeacher.nip,
-          nama: defaultTeacher.nama,
-          nip: defaultTeacher.nip,
-          role: 'wali_kelas',
-          assignedKelas: defaultTeacher.assignedKelas,
-          kelasId: defaultTeacher.kelasId,
-          isLoggedIn: true,
-        };
-        setIsLoading(false);
-        showToast('Login Berhasil!', `Selamat datang, ${user.nama} (Wali Kelas ${user.assignedKelas}).`, 'success');
-        onLoginSuccess(user);
-        return;
+        const defaultTeacher = teachersList[0];
+        if (defaultTeacher) {
+          const user: AuthUser = {
+            username: defaultTeacher.nip,
+            nama: defaultTeacher.nama,
+            nip: defaultTeacher.nip,
+            role: 'wali_kelas',
+            assignedKelas: defaultTeacher.assignedKelas,
+            kelasId: defaultTeacher.kelasId,
+            isLoggedIn: true,
+          };
+          setIsLoading(false);
+          showToast('Login Berhasil!', `Selamat datang, ${user.nama} (Wali Kelas ${user.assignedKelas}).`, 'success');
+          onLoginSuccess(user);
+          return;
+        } else {
+          setIsLoading(false);
+          setErrorMessage('Database Wali Kelas saat ini masih kosong. Silakan masuk sebagai Super Admin untuk menginput data riil wali kelas.');
+          return;
+        }
       }
 
       // 3. Pencarian Akun Guru berdasarkan NIP / Email (Lokal & Cloud)
@@ -293,7 +299,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-slate-800/80 text-center">
+        <div className="mt-5 p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-left text-[11px] text-slate-400 space-y-1">
+          <p className="font-semibold text-amber-400/90 flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+            <span>Akses Pengelola Super Admin:</span>
+          </p>
+          <p className="text-slate-300">
+            Email: <code className="text-amber-300 font-mono">diyanto13@gmail.com</code> atau NIP: <code className="text-amber-300 font-mono">198506122010011014</code>
+          </p>
+          <p className="text-slate-400">
+            Kata Sandi Default: <code className="text-slate-300 font-mono">smkpgri1admin</code>
+          </p>
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-slate-800/80 text-center">
           <p className="text-[11px] text-slate-500">
             SMKS PGRI 1 Kota Sukabumi · Presensi Walas Digital Terintegrasi Cloud
           </p>

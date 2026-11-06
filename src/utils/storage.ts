@@ -1,5 +1,5 @@
 import { Student, DailyAttendance, ClassConfig, FirebaseConfigState, AuthUser, TeacherProfile, SuperAdminConfig } from '../types';
-import { INITIAL_STUDENTS, INITIAL_CLASS_CONFIG, generateInitialAttendanceData, DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN } from '../data/initialData';
+import { INITIAL_STUDENTS, INITIAL_CLASS_CONFIG, generateInitialAttendanceData, DEFAULT_SUPER_ADMIN } from '../data/initialData';
 
 const KEYS = {
   STUDENTS: 'smk_pgri1_presensi_students_v1',
@@ -7,7 +7,7 @@ const KEYS = {
   CONFIG: 'smk_pgri1_presensi_config_v1',
   FIREBASE: 'smk_pgri1_presensi_firebase_v1',
   AUTH: 'smk_pgri1_presensi_auth_v2', // v2 for Pendekatan B role-based
-  TEACHERS: 'smk_pgri1_presensi_teachers_v2',
+  TEACHERS: 'smk_pgri1_presensi_teachers_v3_riil',
   SUPER_ADMIN: 'smk_pgri1_presensi_superadmin_v2',
 };
 
@@ -203,37 +203,19 @@ export const exportBackupJSON = (kelasId: string = 'xii_tkj_2'): void => {
 
 export const getStoredTeachers = (): TeacherProfile[] => {
   try {
+    // Bersihkan key lama agar data sampel mock sebelumnya terhapus bersih
+    localStorage.removeItem('smk_pgri1_presensi_teachers_v2');
+    localStorage.removeItem('smk_pgri1_presensi_teachers_v1');
+
     const raw = localStorage.getItem(KEYS.TEACHERS);
     if (!raw) {
-      saveTeachers(DEFAULT_TEACHERS);
-      return DEFAULT_TEACHERS;
+      return [];
     }
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      // Pastikan semua akun rombel default (seperti Wildani dan kelas lainnya) selalu tersedia
-      const existingNips = new Set(parsed.map((t: TeacherProfile) => (t.nip || '').replace(/[\s-]/g, '')));
-      const existingEmails = new Set(parsed.map((t: TeacherProfile) => (t.email || '').toLowerCase()));
-      
-      let hasNew = false;
-      const merged = [...parsed];
-      DEFAULT_TEACHERS.forEach((def) => {
-        const cleanDefNip = def.nip.replace(/[\s-]/g, '');
-        const cleanDefEmail = def.email.toLowerCase();
-        if (!existingNips.has(cleanDefNip) && !existingEmails.has(cleanDefEmail)) {
-          merged.push(def);
-          hasNew = true;
-        }
-      });
-      if (hasNew) {
-        saveTeachers(merged);
-      }
-      return merged;
-    }
-    saveTeachers(DEFAULT_TEACHERS);
-    return DEFAULT_TEACHERS;
+    return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
     console.error('Error reading teachers from storage', e);
-    return DEFAULT_TEACHERS;
+    return [];
   }
 };
 
@@ -242,6 +224,16 @@ export const saveTeachers = (teachers: TeacherProfile[]): void => {
     localStorage.setItem(KEYS.TEACHERS, JSON.stringify(teachers));
   } catch (e) {
     console.error('Error saving teachers to storage', e);
+  }
+};
+
+export const clearAllStoredTeachers = (): void => {
+  try {
+    localStorage.removeItem(KEYS.TEACHERS);
+    localStorage.removeItem('smk_pgri1_presensi_teachers_v2');
+    localStorage.removeItem('smk_pgri1_presensi_teachers_v1');
+  } catch (e) {
+    console.error('Error clearing teachers from storage', e);
   }
 };
 

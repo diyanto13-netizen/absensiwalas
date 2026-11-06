@@ -5,7 +5,7 @@ import {
   Sparkles, Layers, RefreshCw, X, ChevronRight, UserCheck
 } from 'lucide-react';
 import { TeacherProfile, SuperAdminConfig, AuthUser } from '../types';
-import { ALL_SMK_PGRI_1_ROMBELS, DEFAULT_TEACHERS } from '../data/initialData';
+import { ALL_SMK_PGRI_1_ROMBELS } from '../data/initialData';
 
 interface AkunGuruTabProps {
   currentUser: AuthUser;
@@ -13,6 +13,7 @@ interface AkunGuruTabProps {
   superAdminConfig: SuperAdminConfig;
   onSaveTeacher: (teacher: TeacherProfile) => Promise<void>;
   onDeleteTeacher: (teacherId: string) => Promise<void>;
+  onClearAllTeachers?: () => Promise<void>;
   onSaveSuperAdminConfig: (config: SuperAdminConfig) => Promise<void>;
   showToast: (title: string, message?: string, type?: 'success' | 'error' | 'info') => void;
 }
@@ -23,6 +24,7 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
   superAdminConfig,
   onSaveTeacher,
   onDeleteTeacher,
+  onClearAllTeachers,
   onSaveSuperAdminConfig,
   showToast,
 }) => {
@@ -213,23 +215,19 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
     }
   };
 
-  // Pulihkan / Sinkronkan Akun 21 Rombel Lengkap
-  const handleRestoreAllRombels = async () => {
-    if (confirm('Sinkronkan seluruh 21 akun wali kelas resmi SMKS PGRI 1 (termasuk X TKJ 1 Wildani, S.Kom.)? Akun yang sudah ada akan tetap dipertahankan.')) {
-      setIsSubmitting(true);
-      try {
-        for (const defaultTeacher of DEFAULT_TEACHERS) {
-          await onSaveTeacher(defaultTeacher);
+  // Handler Kosongkan Seluruh Akun Wali Kelas
+  const handleClearAll = async () => {
+    if (confirm('PERINGATAN: Apakah Anda yakin ingin MENGOSONGKAN seluruh data akun wali kelas dari database? Data yang telah diinput akan dihapus dan database akan kembali kosong untuk input data riil baru.')) {
+      if (onClearAllTeachers) {
+        setIsSubmitting(true);
+        try {
+          await onClearAllTeachers();
+          setIsSubmitting(false);
+          showToast('Database Dikosongkan', 'Seluruh data wali kelas telah berhasil dikosongkan.', 'info');
+        } catch (e: any) {
+          setIsSubmitting(false);
+          showToast('Gagal Mengosongkan', e.message || 'Terjadi kesalahan sistem.', 'error');
         }
-        setIsSubmitting(false);
-        showToast(
-          '21 Rombel Berhasil Disinkronkan!',
-          'Seluruh akun wali kelas resmi untuk ke-21 rombel SMKS PGRI 1 siap digunakan.',
-          'success'
-        );
-      } catch (e: any) {
-        setIsSubmitting(false);
-        showToast('Info Sinkronisasi', 'Akun telah tersimpan di penyimpanan lokal dan siap digunakan.', 'info');
       }
     }
   };
@@ -255,15 +253,17 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={handleRestoreAllRombels}
-              disabled={isSubmitting}
-              className="px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 transition cursor-pointer touch-manipulation disabled:opacity-50"
-              title="Lengkapi seluruh 21 rombel resmi secara instan"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${isSubmitting ? 'animate-spin' : ''}`} />
-              <span>Lengkapi 21 Rombel</span>
-            </button>
+            {teachers.length > 0 && onClearAllTeachers && (
+              <button
+                onClick={handleClearAll}
+                disabled={isSubmitting}
+                className="px-3 py-2 rounded-xl text-xs font-semibold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 flex items-center gap-1.5 transition cursor-pointer touch-manipulation disabled:opacity-50"
+                title="Kosongkan seluruh data akun wali kelas dari database"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                <span>Kosongkan Semua Akun</span>
+              </button>
+            )}
 
             <button
               onClick={() => {
@@ -450,106 +450,151 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
         </div>
       </div>
 
-      {/* Grid of Registered Teachers */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {filteredTeachers.map((teacher) => {
-          const rombel = ALL_SMK_PGRI_1_ROMBELS.find((r) => r.id === teacher.kelasId);
-          const isCurrentUser = currentUser.nip === teacher.nip;
-          const isAdmin = teacher.role === 'admin';
-
-          return (
-            <div
-              key={teacher.id}
-              className={`p-4 rounded-2xl glass-panel border transition hover:border-slate-700 flex flex-col justify-between ${
-                isAdmin 
-                  ? 'border-amber-500/30 bg-amber-950/10' 
-                  : isCurrentUser 
-                    ? 'border-indigo-500/40 bg-indigo-950/10' 
-                    : 'border-slate-800'
-              }`}
+      {/* Grid of Registered Teachers or Empty State */}
+      {teachers.length === 0 ? (
+        <div className="glass-panel p-8 sm:p-12 rounded-2xl border border-dashed border-amber-500/30 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center">
+            <UserCheck className="w-8 h-8" />
+          </div>
+          <div className="max-w-md mx-auto space-y-1.5">
+            <h3 className="text-base sm:text-lg font-bold text-white">
+              Database Wali Kelas Masih Kosong
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              Seluruh data wali kelas contoh telah dibersihkan. Sistem siap menerima <strong className="text-amber-400">data riil</strong> yang diinput langsung oleh Super Admin.
+            </p>
+            <div className="pt-2 text-xs text-amber-300/90 bg-amber-950/30 border border-amber-500/20 rounded-xl p-3 text-left space-y-1">
+              <p className="font-semibold text-amber-300">Jaminan Keamanan Data Riil:</p>
+              <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-slate-300">
+                <li>Data yang diinput oleh Super Admin tersimpan permanen di database lokal & Cloud Firestore.</li>
+                <li>Data tidak akan tertimpa atau terganti kembali ke data contoh.</li>
+                <li>Setiap wali kelas yang dibuat akan langsung dapat login menggunakan NIP / Email masing-masing.</li>
+              </ul>
+            </div>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={handleOpenCreateModal}
+              className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-lg shadow-amber-500/25 inline-flex items-center gap-2 transition cursor-pointer touch-manipulation"
             >
-              <div>
-                <div className="flex items-start justify-between gap-2 mb-2.5">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+              <UserPlus className="w-4 h-4" />
+              <span>+ Buat Akun Wali Kelas Riil Pertama</span>
+            </button>
+          </div>
+        </div>
+      ) : filteredTeachers.length === 0 ? (
+        <div className="glass-panel p-8 rounded-2xl border border-slate-800 text-center space-y-2">
+          <Search className="w-8 h-8 mx-auto text-slate-500" />
+          <p className="text-sm font-bold text-white">Tidak Ada Guru Ditemukan</p>
+          <p className="text-xs text-slate-400">Tidak ada akun wali kelas yang cocok dengan kata kunci atau filter terpilih.</p>
+          <button
+            onClick={() => { setSearchQuery(''); setSelectedTingkat('ALL'); setSelectedJurusan('ALL'); }}
+            className="text-xs text-amber-400 hover:text-amber-300 underline font-semibold mt-2 cursor-pointer"
+          >
+            Reset Filter
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {filteredTeachers.map((teacher) => {
+            const rombel = ALL_SMK_PGRI_1_ROMBELS.find((r) => r.id === teacher.kelasId);
+            const isCurrentUser = currentUser.nip === teacher.nip;
+            const isAdmin = teacher.role === 'admin';
+
+            return (
+              <div
+                key={teacher.id}
+                className={`p-4 rounded-2xl glass-panel border transition hover:border-slate-700 flex flex-col justify-between ${
+                  isAdmin 
+                    ? 'border-amber-500/30 bg-amber-950/10' 
+                    : isCurrentUser 
+                      ? 'border-indigo-500/40 bg-indigo-950/10' 
+                      : 'border-slate-800'
+                }`}
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2 mb-2.5">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                        isAdmin 
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                          : 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                      }`}>
+                        {teacher.nama.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-white truncate" title={teacher.nama}>
+                          {teacher.nama}
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          NIP: {teacher.nip}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${
                       isAdmin 
                         ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
-                        : 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                        : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
                     }`}>
-                      {teacher.nama.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-white truncate" title={teacher.nama}>
-                        {teacher.nama}
-                      </p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        NIP: {teacher.nip}
-                      </p>
-                    </div>
+                      {teacher.assignedKelas}
+                    </span>
                   </div>
 
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${
-                    isAdmin 
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
-                      : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                  }`}>
-                    {teacher.assignedKelas}
-                  </span>
-                </div>
-
-                {/* Details */}
-                <div className="space-y-1.5 py-2.5 border-y border-slate-800/80 text-xs">
-                  <div className="flex items-center gap-2 text-slate-400 text-[11px]">
-                    <School className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                    <span className="truncate">{rombel?.jurusan || 'Teknik & Manajemen'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-400 text-[11px]">
-                    <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span className="truncate text-slate-300 font-mono">{teacher.email}</span>
-                  </div>
-                  {teacher.noHp && (
+                  {/* Details */}
+                  <div className="space-y-1.5 py-2.5 border-y border-slate-800/80 text-xs">
                     <div className="flex items-center gap-2 text-slate-400 text-[11px]">
-                      <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span className="font-mono text-emerald-300">{teacher.noHp}</span>
+                      <School className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                      <span className="truncate">{rombel?.jurusan || 'Teknik & Manajemen'}</span>
                     </div>
-                  )}
-                  <div className="flex items-center gap-2 text-slate-400 text-[11px]">
-                    <KeyRound className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>Kata sandi login: <strong className="text-slate-200 font-mono">{teacher.password || 'smkpgri1'}</strong></span>
+                    <div className="flex items-center gap-2 text-slate-400 text-[11px]">
+                      <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      <span className="truncate text-slate-300 font-mono">{teacher.email}</span>
+                    </div>
+                    {teacher.noHp && (
+                      <div className="flex items-center gap-2 text-slate-400 text-[11px]">
+                        <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span className="font-mono text-emerald-300">{teacher.noHp}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-slate-400 text-[11px]">
+                      <KeyRound className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Kata sandi login: <strong className="text-slate-200 font-mono">{teacher.password || 'smkpgri1'}</strong></span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between pt-3 mt-1">
+                  <span className="text-[10px] text-slate-500">
+                    {isAdmin ? 'Akses Kurikulum' : 'Wali Kelas Aktif'}
+                  </span>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleOpenEditModal(teacher)}
+                      className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition cursor-pointer"
+                      title="Edit Profil Akun"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+
+                    {!isAdmin && (
+                      <button
+                        onClick={() => handleDeleteTeacher(teacher)}
+                        className="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-500/20 transition cursor-pointer"
+                        title="Hapus Akun"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between pt-3 mt-1">
-                <span className="text-[10px] text-slate-500">
-                  {isAdmin ? 'Akses Kurikulum' : 'Wali Kelas Aktif'}
-                </span>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => handleOpenEditModal(teacher)}
-                    className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition cursor-pointer"
-                    title="Edit Profil Akun"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </button>
-
-                  {!isAdmin && (
-                    <button
-                      onClick={() => handleDeleteTeacher(teacher)}
-                      className="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-500/20 transition cursor-pointer"
-                      title="Hapus Akun"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Modal: Buat / Edit Akun Wali Kelas */}
       {(isCreateModalOpen || isEditModalOpen) && (
