@@ -11,7 +11,9 @@ import {
   getStoredAttendance, saveAttendanceData, 
   getStoredConfig, saveConfig, 
   getStoredFirebaseConfig, saveFirebaseConfig, 
-  getStoredAuth, saveAuth 
+  getStoredAuth, saveAuth,
+  getStoredTeachers, saveTeachers,
+  getStoredSuperAdmin, saveStoredSuperAdmin
 } from './utils/storage';
 import { 
   loadStudentsFromFirestore, saveStudentToFirestore, saveStudentsBatchToFirestore,
@@ -65,9 +67,9 @@ export default function App() {
   const [firebaseConfig, setFirebaseConfigState] = useState<FirebaseConfigState>(() => getStoredFirebaseConfig());
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
-  // State Manajemen Akun Wali Kelas & Super Admin
-  const [teachers, setTeachers] = useState<TeacherProfile[]>(DEFAULT_TEACHERS);
-  const [superAdminConfig, setSuperAdminConfig] = useState<SuperAdminConfig>(DEFAULT_SUPER_ADMIN);
+  // State Manajemen Akun Wali Kelas & Super Admin (Offline-First Storage)
+  const [teachers, setTeachers] = useState<TeacherProfile[]>(() => getStoredTeachers());
+  const [superAdminConfig, setSuperAdminConfig] = useState<SuperAdminConfig>(() => getStoredSuperAdmin());
 
   // State Tema (Mode Gelap, Sunrise Foto 1, Neon Foto 2, Mode Terang)
   const [theme, setTheme] = useState<ThemeMode>(() => getStoredTheme());
@@ -315,26 +317,35 @@ export default function App() {
 
   // Handler Tambah / Update Akun Guru & Wali Kelas
   const handleSaveTeacher = async (teacher: TeacherProfile) => {
+    // 1. Simpan ke Firestore & LocalStorage
     await saveTeacherToFirestore(teacher);
     setTeachers((prev) => {
       const idx = prev.findIndex((t) => t.id === teacher.id || t.nip === teacher.nip);
+      let updated: TeacherProfile[];
       if (idx >= 0) {
-        const copy = [...prev];
-        copy[idx] = teacher;
-        return copy;
+        updated = [...prev];
+        updated[idx] = teacher;
+      } else {
+        updated = [...prev, teacher];
       }
-      return [...prev, teacher];
+      saveTeachers(updated);
+      return updated;
     });
   };
 
   // Handler Hapus Akun Guru
   const handleDeleteTeacher = async (teacherId: string) => {
     await deleteTeacherFromFirestore(teacherId);
-    setTeachers((prev) => prev.filter((t) => t.id !== teacherId));
+    setTeachers((prev) => {
+      const updated = prev.filter((t) => t.id !== teacherId && t.nip !== teacherId);
+      saveTeachers(updated);
+      return updated;
+    });
   };
 
   // Handler Ganti Akun Super Admin
   const handleSaveSuperAdminConfig = async (newConfig: SuperAdminConfig) => {
+    saveStoredSuperAdmin(newConfig);
     await saveSuperAdminConfigToFirestore(newConfig);
     setSuperAdminConfig(newConfig);
 

@@ -1,5 +1,5 @@
-import { Student, DailyAttendance, ClassConfig, FirebaseConfigState, AuthUser } from '../types';
-import { INITIAL_STUDENTS, INITIAL_CLASS_CONFIG, generateInitialAttendanceData } from '../data/initialData';
+import { Student, DailyAttendance, ClassConfig, FirebaseConfigState, AuthUser, TeacherProfile, SuperAdminConfig } from '../types';
+import { INITIAL_STUDENTS, INITIAL_CLASS_CONFIG, generateInitialAttendanceData, DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN } from '../data/initialData';
 
 const KEYS = {
   STUDENTS: 'smk_pgri1_presensi_students_v1',
@@ -7,6 +7,8 @@ const KEYS = {
   CONFIG: 'smk_pgri1_presensi_config_v1',
   FIREBASE: 'smk_pgri1_presensi_firebase_v1',
   AUTH: 'smk_pgri1_presensi_auth_v2', // v2 for Pendekatan B role-based
+  TEACHERS: 'smk_pgri1_presensi_teachers_v2',
+  SUPER_ADMIN: 'smk_pgri1_presensi_superadmin_v2',
 };
 
 export const getStoredStudents = (kelasId: string = 'xii_tkj_2'): Student[] => {
@@ -198,3 +200,69 @@ export const exportBackupJSON = (kelasId: string = 'xii_tkj_2'): void => {
   downloadAnchor.click();
   downloadAnchor.remove();
 };
+
+export const getStoredTeachers = (): TeacherProfile[] => {
+  try {
+    const raw = localStorage.getItem(KEYS.TEACHERS);
+    if (!raw) {
+      saveTeachers(DEFAULT_TEACHERS);
+      return DEFAULT_TEACHERS;
+    }
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      // Pastikan semua akun rombel default (seperti Wildani dan kelas lainnya) selalu tersedia
+      const existingNips = new Set(parsed.map((t: TeacherProfile) => (t.nip || '').replace(/[\s-]/g, '')));
+      const existingEmails = new Set(parsed.map((t: TeacherProfile) => (t.email || '').toLowerCase()));
+      
+      let hasNew = false;
+      const merged = [...parsed];
+      DEFAULT_TEACHERS.forEach((def) => {
+        const cleanDefNip = def.nip.replace(/[\s-]/g, '');
+        const cleanDefEmail = def.email.toLowerCase();
+        if (!existingNips.has(cleanDefNip) && !existingEmails.has(cleanDefEmail)) {
+          merged.push(def);
+          hasNew = true;
+        }
+      });
+      if (hasNew) {
+        saveTeachers(merged);
+      }
+      return merged;
+    }
+    saveTeachers(DEFAULT_TEACHERS);
+    return DEFAULT_TEACHERS;
+  } catch (e) {
+    console.error('Error reading teachers from storage', e);
+    return DEFAULT_TEACHERS;
+  }
+};
+
+export const saveTeachers = (teachers: TeacherProfile[]): void => {
+  try {
+    localStorage.setItem(KEYS.TEACHERS, JSON.stringify(teachers));
+  } catch (e) {
+    console.error('Error saving teachers to storage', e);
+  }
+};
+
+export const getStoredSuperAdmin = (): SuperAdminConfig => {
+  try {
+    const raw = localStorage.getItem(KEYS.SUPER_ADMIN);
+    if (!raw) {
+      saveStoredSuperAdmin(DEFAULT_SUPER_ADMIN);
+      return DEFAULT_SUPER_ADMIN;
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return DEFAULT_SUPER_ADMIN;
+  }
+};
+
+export const saveStoredSuperAdmin = (config: SuperAdminConfig): void => {
+  try {
+    localStorage.setItem(KEYS.SUPER_ADMIN, JSON.stringify(config));
+  } catch (e) {
+    console.error('Error saving superadmin config to storage', e);
+  }
+};
+

@@ -5,7 +5,7 @@ import {
   Sparkles, Layers, RefreshCw, X, ChevronRight, UserCheck
 } from 'lucide-react';
 import { TeacherProfile, SuperAdminConfig, AuthUser } from '../types';
-import { ALL_SMK_PGRI_1_ROMBELS } from '../data/initialData';
+import { ALL_SMK_PGRI_1_ROMBELS, DEFAULT_TEACHERS } from '../data/initialData';
 
 interface AkunGuruTabProps {
   currentUser: AuthUser;
@@ -139,7 +139,7 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
       const cleanNip = (formData.nip || '').trim();
       const teacherId = isEditModalOpen && selectedTeacherForEdit 
         ? selectedTeacherForEdit.id 
-        : `teacher-${cleanNip.replace(/\s+/g, '')}`;
+        : `teacher-${cleanNip.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
       const newTeacher: TeacherProfile = {
         id: teacherId,
@@ -158,8 +158,8 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
       setIsCreateModalOpen(false);
       setIsEditModalOpen(false);
       showToast(
-        'Akun Guru Disimpan!',
-        `Akun wali kelas untuk ${newTeacher.nama} (${newTeacher.assignedKelas}) sukses disimpan di Cloud.`,
+        'Akun Guru Berhasil Disimpan!',
+        `Akun wali kelas untuk ${newTeacher.nama} (${newTeacher.assignedKelas}) sukses disimpan permanen di database lokal & cloud.`,
         'success'
       );
     } catch (err: any) {
@@ -213,6 +213,27 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
     }
   };
 
+  // Pulihkan / Sinkronkan Akun 21 Rombel Lengkap
+  const handleRestoreAllRombels = async () => {
+    if (confirm('Sinkronkan seluruh 21 akun wali kelas resmi SMKS PGRI 1 (termasuk X TKJ 1 Wildani, S.Kom.)? Akun yang sudah ada akan tetap dipertahankan.')) {
+      setIsSubmitting(true);
+      try {
+        for (const defaultTeacher of DEFAULT_TEACHERS) {
+          await onSaveTeacher(defaultTeacher);
+        }
+        setIsSubmitting(false);
+        showToast(
+          '21 Rombel Berhasil Disinkronkan!',
+          'Seluruh akun wali kelas resmi untuk ke-21 rombel SMKS PGRI 1 siap digunakan.',
+          'success'
+        );
+      } catch (e: any) {
+        setIsSubmitting(false);
+        showToast('Info Sinkronisasi', 'Akun telah tersimpan di penyimpanan lokal dan siap digunakan.', 'info');
+      }
+    }
+  };
+
   return (
     <div className="space-y-5 pb-20 md:pb-6">
       
@@ -233,7 +254,17 @@ export const AkunGuruTab: React.FC<AkunGuruTabProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={handleRestoreAllRombels}
+              disabled={isSubmitting}
+              className="px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 transition cursor-pointer touch-manipulation disabled:opacity-50"
+              title="Lengkapi seluruh 21 rombel resmi secara instan"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${isSubmitting ? 'animate-spin' : ''}`} />
+              <span>Lengkapi 21 Rombel</span>
+            </button>
+
             <button
               onClick={() => {
                 setAdminFormData(superAdminConfig);

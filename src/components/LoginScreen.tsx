@@ -3,6 +3,7 @@ import { LogIn, ShieldCheck, Lock, User, BadgeCheck, Sun, Moon } from 'lucide-re
 import { AuthUser, TeacherProfile, SuperAdminConfig, ThemeMode } from '../types';
 import { DEFAULT_TEACHERS, DEFAULT_SUPER_ADMIN } from '../data/initialData';
 import { findTeacherByNipOrIdentifier, subscribeToTeachers, subscribeToSuperAdminConfig } from '../utils/firebase';
+import { getStoredTeachers, getStoredSuperAdmin } from '../utils/storage';
 
 interface LoginScreenProps {
   onLoginSuccess: (user: AuthUser) => void;
@@ -22,11 +23,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
-  // Real-time dynamic teacher list & superadmin config
-  const [teachersList, setTeachersList] = useState<TeacherProfile[]>(DEFAULT_TEACHERS);
-  const [activeAdminConfig, setActiveAdminConfig] = useState<SuperAdminConfig>(DEFAULT_SUPER_ADMIN);
+  // Real-time dynamic teacher list & superadmin config (Offline-First)
+  const [teachersList, setTeachersList] = useState<TeacherProfile[]>(() => getStoredTeachers());
+  const [activeAdminConfig, setActiveAdminConfig] = useState<SuperAdminConfig>(() => getStoredSuperAdmin());
 
   useEffect(() => {
+    // Sinkronkan state awal dengan penyimpanan lokal
+    setTeachersList(getStoredTeachers());
+    setActiveAdminConfig(getStoredSuperAdmin());
+
     const unsubTeachers = subscribeToTeachers((cloudTeachers) => {
       if (cloudTeachers && cloudTeachers.length > 0) {
         setTeachersList(cloudTeachers);
@@ -55,14 +60,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
     try {
       // 1. Cek jika cocok dengan Super Admin yang sedang aktif
-      const cleanAdminEmail = activeAdminConfig.email.trim().toLowerCase();
-      const cleanAdminNip = activeAdminConfig.nip.trim().replace(/\s+/g, '').toLowerCase();
+      const cleanAdminEmail = (activeAdminConfig.email || '').trim().toLowerCase();
+      const cleanAdminNip = (activeAdminConfig.nip || '').trim().replace(/[\s-]/g, '').toLowerCase();
+      const adminEmailPrefix = cleanAdminEmail.split('@')[0];
 
       if (
         cleanInput === cleanAdminEmail ||
         cleanInput === cleanAdminNip ||
         cleanInput === 'admin' ||
-        cleanInput === 'kurikulum'
+        cleanInput === 'kurikulum' ||
+        cleanInput === adminEmailPrefix
       ) {
         const expectedAdminPass = activeAdminConfig.password || 'smkpgri1admin';
         if (cleanPass === expectedAdminPass || cleanPass === 'smkpgri1' || cleanPass === 'admin123') {
@@ -106,8 +113,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         return;
       }
 
-      // 3. Pencarian Akun Guru berdasarkan NIP / Email (Pendekatan B)
-      const foundTeacher = await findTeacherByNipOrIdentifier(cleanInput);
+      // 3. Pencarian Akun Guru berdasarkan NIP / Email (Lokal & Cloud)
+      let foundTeacher = await findTeacherByNipOrIdentifier(identifier);
+
+      // Jika belum ditemukan, cari langsung di teachersList (state lokal)
+      if (!foundTeacher) {
+        foundTeacher = teachersList.find((t) => {
+          const cleanNip = (t.nip || '').toLowerCase().replace(/[\s-]/g, '');
+          const cleanEmail = (t.email || '').toLowerCase();
+          const cleanId = (t.id || '').toLowerCase().replace(/[\s-]/g, '');
+          const emailPrefix = cleanEmail.split('@')[0];
+          return (
+            cleanNip === cleanInput ||
+            cleanEmail === cleanInput ||
+            cleanId === cleanInput ||
+            emailPrefix === cleanInput ||
+            cleanEmail.startsWith(cleanInput) ||
+            cleanInput.startsWith(emailPrefix) ||
+            t.nama.toLowerCase().includes(cleanInput)
+          );
+        }) || null;
+      }
 
       if (foundTeacher) {
         const expectedTeacherPass = foundTeacher.password || 'smkpgri1';
@@ -128,7 +154,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
           setIsLoading(false);
           showToast(
-            'Verifikasi NIP Berhasil!',
+            'Verifikasi Berhasil!',
             `Selamat bertugas, ${authUser.nama} (${authUser.role === 'admin' ? 'Super Admin' : `Wali Kelas ${authUser.assignedKelas}`}).`,
             'success'
           );
@@ -137,18 +163,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         } else {
           setIsLoading(false);
           setErrorMessage('Kata sandi yang Anda masukkan salah!');
-          showToast('Kata Sandi Salah', 'Periksa kembali kata sandi akun NIP Anda.', 'error');
+          showToast('Kata Sandi Salah', 'Periksa kembali kata sandi akun Anda (default: smkpgri1).', 'error');
           return;
         }
       }
 
       // 4. Jika NIP / Identitas tidak terdaftar
       setIsLoading(false);
-      setErrorMessage(`NIP atau Akun "${identifier}" belum terdaftar di database SMKS PGRI 1.`);
+      setErrorMessage(`NIP atau Akun "${identifier}" belum terdaftar di database SMKS PGRI 1. Pastikan Anda memasukkan NIP atau Email yang terdaftar.`);
       showToast('NIP Tidak Ditemukan', 'Periksa kembali NIP/Email Anda atau hubungi Super Admin untuk pendaftaran akun.', 'error');
     } catch (err) {
       setIsLoading(false);
-      setErrorMessage('Terjadi kendala saat memverifikasi NIP. Silakan coba lagi.');
+      setErrorMessage('Terjadi kendala saat memverifikasi akun. Silakan coba lagi.');
       showToast('Koneksi Terganggu', 'Gagal memverifikasi akun guru.', 'error');
     }
   };
